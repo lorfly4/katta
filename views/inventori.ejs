@@ -1,0 +1,121 @@
+<section class="content">
+  <div class="container-fluid">
+    <main class="bg-white rounded-lg p-6 max-w-full">
+      <!-- Header -->
+      <div
+        class="flex flex-col md:flex-row md:items-center md:justify-between mb-6"
+      >
+        <h1 class="text-2xl font-semibold text-[#1E1E1E] mb-4 md:mb-0">
+          Inventori
+        </h1>
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="relative inline-block text-left">
+            <button
+              class="inline-flex justify-center items-center gap-1 rounded border border-gray-300 bg-white px-3 py-1 text-sm font-normal text-[#1E1E1E] hover:bg-gray-50"
+            >
+              <i class="fas fa-chart-bar text-[14px]"></i> Laporan
+              <i class="fas fa-chevron-down text-[10px] ml-1"></i>
+            </button>
+          </div>
+          <div class="relative inline-block text-left">
+            <button
+              class="inline-flex justify-center items-center gap-1 rounded border border-gray-300 bg-white px-3 py-1 text-sm font-normal text-[#1E1E1E] hover:bg-gray-50"
+            >
+              <i class="fas fa-question-circle text-[14px]"></i> Panduan
+              <i class="fas fa-chevron-down text-[10px] ml-1"></i>
+            </button>
+          </div>
+          <button
+            class="inline-flex items-center gap-1 rounded bg-[#3B82F6] px-4 py-1 text-sm font-semibold text-white hover:bg-[#2563EB]"
+          >
+            <i class="fas fa-plus"></i> Tambah Gudang
+          </button>
+          <button
+            class="inline-flex items-center gap-1 rounded border border-gray-300 bg-white px-3 py-1 text-sm font-normal text-[#1E1E1E] hover:bg-gray-50"
+          >
+            <i class="fas fa-print text-[14px]"></i> Print
+          </button>
+          <button
+            class="inline-flex items-center justify-center rounded p-1 text-gray-600 hover:bg-gray-100"
+          >
+            <i class="fas fa-ellipsis-v"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div
+        class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4"
+      >
+        <button
+          class="inline-flex items-center gap-1 rounded border border-gray-300 bg-white px-3 py-1 text-xs font-normal text-[#1E1E1E] hover:bg-gray-50"
+        >
+          <i class="fas fa-filter text-[10px]"></i> Filter
+        </button>
+        <div class="flex items-center gap-2">
+          <label class="text-xs text-[#1E1E1E]" for="toggle-stock"
+            >Tampilkan stok per gudang</label
+          >
+          <div class="relative">
+            <input class="sr-only peer" id="toggle-stock" type="checkbox" />
+            <div
+              class="w-10 h-5 bg-gray-300 rounded-full peer-checked:bg-[#3B82F6] transition-colors cursor-pointer"
+            ></div>
+            <div
+              class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transform peer-checked:translate-x-5 transition-transform"
+            ></div>
+          </div>
+        </div>
+        <input
+          type="search"
+          placeholder="Cari"
+          class="ml-auto max-w-xs rounded border border-gray-300 bg-white px-3 py-1 text-xs text-gray-400 placeholder:text-gray-400 focus:border-[#3B82F6]"
+        />
+        <div class="flex items-center gap-2">
+          <button
+            aria-label="List view"
+            class="rounded border border-gray-300 bg-white p-1 text-gray-600 hover:bg-gray-100"
+          >
+            <i class="fas fa-bars"></i>
+          </button>
+          <button
+            aria-label="Grid view"
+            class="rounded border border-[#3B82F6] bg-[#EFF6FF] p-1 text-[#3B82F6]"
+          >
+            <i class="fas fa-th"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Produk Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <%
+          const gudangs = [
+            { nama: 'Unassigned', kode: 'UA' },
+            { nama: 'Gudang Utama', kode: 'GU' },
+            { nama: 'Gudang Elektronik', kode: 'GE' },
+          ];
+          gudangs.forEach((g) => {
+        %>
+        <div class="rounded-lg overflow-hidden shadow-sm">
+          <img
+            src="https://storage.googleapis.com/a1aa/image/a7139a3a-947c-41d4-d635-2c2a2cf1f7e4.jpg"
+            class="w-full object-cover"
+            alt="Gudang"
+            loading="lazy"
+          />
+          <div
+            class="flex justify-between px-3 py-1 text-[10px] text-[#1E1E1E] bg-white"
+          >
+            <span class="font-semibold"><%= g.nama %></span>
+            <span class="text-right">Kode: <%= g.kode %></span>
+          </div>
+        </div>
+        <%
+          });
+        %>
+      </div>
+    </main>
+  </div>
+</section>
+

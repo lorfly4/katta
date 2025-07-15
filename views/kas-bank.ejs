@@ -1,0 +1,206 @@
+<!-- Header & Actions -->
+<section class="flex items-center justify-between mb-4">
+  <h1 class="text-base font-normal text-gray-900">Kas &amp; Bank</h1>
+  <div class="flex items-center space-x-2">
+    <button
+      class="flex items-center gap-1 text-xs font-normal text-gray-700 border border-gray-300 rounded px-2 py-1 hover:bg-gray-100"
+      type="button"
+    >
+      Logouts <i class="fas fa-caret-down text-xs"></i>
+    </button>
+    <button
+      class="flex items-center gap-1 text-xs font-normal text-gray-700 border border-gray-300 rounded px-2 py-1 hover:bg-gray-100"
+      type="button"
+    >
+      Purchase <i class="fas fa-caret-down text-xs"></i>
+    </button>
+    <button
+      class="bg-blue-600 text-white text-xs font-normal rounded px-3 py-1 hover:bg-blue-700"
+      type="button"
+    >
+      Tambah Kas &amp; Bank
+    </button>
+    <button
+      class="flex items-center gap-1 text-xs font-normal text-gray-700 border border-gray-300 rounded px-2 py-1 hover:bg-gray-100"
+      type="button"
+    >
+      Print <i class="fas fa-caret-down text-xs"></i>
+    </button>
+  </div>
+</section>
+
+<!-- Main Section -->
+<section class="border border-gray-200 rounded p-3 mb-4">
+  <!-- Search -->
+  <div class="mb-3">
+    <button class="text-gray-600 text-sm" type="button">
+      <i class="fas fa-bars"></i>
+    </button>
+  </div>
+  <div class="flex justify-end mb-3">
+    <div
+      class="flex items-center border border-gray-300 rounded text-gray-600 text-xs px-2 py-1 w-28"
+    >
+      <input
+        class="w-full text-xs text-gray-600 placeholder-gray-400 focus:outline-none"
+        placeholder="0 - 1"
+        type="text"
+      />
+      <i class="fas fa-search ml-1"></i>
+    </div>
+  </div>
+
+  <!-- Card: Kas -->
+  <section class="border border-gray-200 rounded p-3 mb-4">
+    <div class="flex justify-between items-start mb-3">
+      <div>
+        <p class="text-xs font-semibold text-gray-700">Kas</p>
+        <p class="text-xs text-gray-500">1-10001</p>
+      </div>
+      <button
+        class="bg-green-500 text-white text-xs font-semibold rounded px-3 py-1 hover:bg-green-600"
+      >
+        <i class="fas fa-check mr-1"></i>Aktifkan
+      </button>
+    </div>
+    <div class="flex flex-col sm:flex-row sm:space-x-8 mb-3">
+      <div class="text-xs text-gray-700 w-28 flex flex-col space-y-2">
+        <div>
+          <p class="font-semibold">6.672.390</p>
+          <p class="text-gray-400">Saldo di bank</p>
+        </div>
+        <div>
+          <p class="font-semibold">31.676.823</p>
+          <p class="text-gray-400">Saldo di kliring</p>
+        </div>
+      </div>
+      <div class="flex-1">
+        <canvas id="chartKas"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- Card: Rekening Bank -->
+  <section class="border border-gray-200 rounded p-3 mb-4">
+    <div class="flex justify-between items-start mb-3">
+      <div>
+        <p class="text-xs font-semibold text-gray-700">Rekening Bank</p>
+        <p class="text-xs text-gray-500">1-10002</p>
+      </div>
+      <button
+        class="bg-green-500 text-white text-xs font-semibold rounded px-3 py-1 hover:bg-green-600"
+      >
+        <i class="fas fa-check mr-1"></i>Aktifkan
+      </button>
+    </div>
+    <div class="flex flex-col sm:flex-row sm:space-x-8 mb-3">
+      <div class="text-xs text-gray-700 w-28 flex flex-col space-y-2">
+        <div>
+          <p class="font-semibold">2.287.181</p>
+          <p class="text-gray-400">Saldo di bank</p>
+        </div>
+        <div>
+          <p class="font-semibold">20.724.616</p>
+          <p class="text-gray-400">Saldo di kliring</p>
+        </div>
+      </div>
+      <div class="flex-1">
+        <canvas id="chartRekening"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- Card: Giro -->
+  <section class="border border-gray-200 rounded p-3">
+    <div class="flex justify-between items-start mb-3">
+      <div>
+        <p class="text-xs font-semibold text-gray-700">Giro</p>
+        <p class="text-xs text-gray-500">1-10003</p>
+      </div>
+      <button
+        class="bg-green-500 text-white text-xs font-semibold rounded px-3 py-1 hover:bg-green-600"
+      >
+        <i class="fas fa-check mr-1"></i>Aktifkan
+      </button>
+    </div>
+    <div class="flex flex-col sm:flex-row sm:space-x-8">
+      <div class="text-xs text-gray-700 w-28 flex flex-col space-y-2">
+        <div>
+          <p class="font-semibold">7.279.670</p>
+          <p class="text-gray-400">Saldo di bank</p>
+        </div>
+        <div>
+          <p class="font-semibold">12.571.330</p>
+          <p class="text-gray-400">Saldo di kliring</p>
+        </div>
+      </div>
+      <div class="flex-1">
+        <canvas id="chartGiro"></canvas>
+      </div>
+    </div>
+  </section>
+</section>
+
+<!-- Chart.js CDN + Init Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const chartData = {
+    labels: ["Feb", "Mar", "Apr", "Mei", "Jun", "Jul"],
+    datasets: [
+      {
+        label: "Saldo Kas",
+        data: [3000000, 3500000, 4500000, 6000000, 6672390, 7100000],
+        backgroundColor: "rgba(59, 130, 246, 0.4)",
+        borderColor: "rgba(59, 130, 246, 1)",
+        fill: true,
+        tension: 0.4,
+      },
+    ],
+  };
+
+  const chartRekeningData = {
+    labels: ["Feb", "Mar", "Apr", "Mei", "Jun", "Jul"],
+    datasets: [
+      {
+        label: "Saldo Rekening",
+        data: [1000000, 1800000, 2000000, 2200000, 2287181, 2500000],
+        backgroundColor: "rgba(251, 191, 36, 0.4)",
+        borderColor: "rgba(251, 191, 36, 1)",
+        fill: true,
+        tension: 0.4,
+      },
+    ],
+  };
+
+  const chartGiroData = {
+    labels: ["Feb", "Mar", "Apr", "Mei", "Jun", "Jul"],
+    datasets: [
+      {
+        label: "Saldo Giro",
+        data: [3000000, 5000000, 6000000, 6500000, 7279670, 7400000],
+        backgroundColor: "rgba(13, 148, 136, 0.4)",
+        borderColor: "rgba(13, 148, 136, 1)",
+        fill: true,
+        tension: 0.4,
+      },
+    ],
+  };
+
+  new Chart(document.getElementById("chartKas"), {
+    type: "line",
+    data: chartData,
+    options: { responsive: true, maintainAspectRatio: false },
+  });
+
+  new Chart(document.getElementById("chartRekening"), {
+    type: "line",
+    data: chartRekeningData,
+    options: { responsive: true, maintainAspectRatio: false },
+  });
+
+  new Chart(document.getElementById("chartGiro"), {
+    type: "line",
+    data: chartGiroData,
+    options: { responsive: true, maintainAspectRatio: false },
+  });
+</script>

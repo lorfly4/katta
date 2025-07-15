@@ -1,0 +1,115 @@
+<section class="content">
+  <div class="container-fluid">
+    <!-- Header Bar -->
+    <div class="bg-[#F4F7FA] border-b border-[#E2E8F0] px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <h1 class="text-[18px] font-semibold leading-6">Produk</h1>
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3 text-[13px] font-normal text-[#475569]">
+        <div class="flex items-center gap-1 border border-[#CBD5E1] rounded px-2 py-[6px] cursor-pointer select-none">
+          <i class="fas fa-chart-bar text-[12px]"></i>
+          <span>Laporan</span>
+          <i class="fas fa-chevron-down text-[10px]"></i>
+        </div>
+        <div class="flex items-center gap-1 border border-[#CBD5E1] rounded px-2 py-[6px] cursor-pointer select-none">
+          <i class="fas fa-question-circle text-[12px]"></i>
+          <span>Panduan</span>
+          <i class="fas fa-chevron-down text-[10px]"></i>
+        </div>
+        <button class="bg-[#2563EB] text-white text-[13px] font-semibold rounded px-4 py-[6px] hover:bg-[#1D4ED8] transition">
+          + Tambah
+        </button>
+        <div class="flex items-center gap-1 border border-[#CBD5E1] rounded px-2 py-[6px] cursor-pointer select-none">
+          <i class="fas fa-file-import text-[12px]"></i>
+          <span>Import</span>
+          <i class="fas fa-chevron-down text-[10px]"></i>
+        </div>
+        <button class="flex items-center gap-1 border border-[#CBD5E1] rounded px-3 py-[6px] text-[13px] font-normal hover:bg-[#E2E8F0] transition">
+          <i class="fas fa-print text-[12px]"></i> Print
+        </button>
+        <button class="text-[#475569] hover:bg-[#E2E8F0] rounded px-2 py-[6px]">
+          <i class="fas fa-ellipsis-v text-[14px]"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Kartu Statistik Produk -->
+    <div class="px-6 mt-6 flex flex-wrap gap-4 max-w-full overflow-x-auto">
+      <% const stats = [
+        { label: 'Stok Tersedia', value: 2, color: '#2DBE4F' },
+        { label: 'Stok Hampir Habis', value: 0, color: '#F9C851' },
+        { label: 'Stok Habis', value: 0, color: '#F94C66' },
+        { label: 'Total Stok', value: '14.455', color: '#F68B4A' },
+        { label: 'Nilai Produk', value: '18.554.521', color: '#3B5DE7' },
+        { label: 'Total HPP', value: '2.567', color: '#F94CCF' }
+      ]; %>
+      <% stats.forEach(stat => { %>
+      <div class="bg-white rounded-md shadow-sm flex items-center gap-4 px-4 py-3 min-w-[200px]">
+        <div class="flex items-center justify-center w-8 h-8 rounded-full" style="background: <%= stat.color %>; color: white">
+          <%= stat.value %>
+        </div>
+        <div class="text-[13px] font-semibold leading-5">
+          <div class="text-[14px] font-bold text-[#1E293B]">
+            <%= stat.value %>
+          </div>
+          <div class="text-[10px] font-semibold text-[#475569]">
+            <%= stat.label %>
+          </div>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+
+    <!-- Tabel Produk -->
+    <div class="mt-6 px-6 pb-10">
+      <div class="bg-white rounded-md shadow-sm p-4">
+        <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+          <div class="relative text-[12px] text-[#475569] w-full sm:w-1/2">
+            <input type="text" placeholder="Cari Produk" class="border border-[#CBD5E1] rounded px-3 py-1 w-full focus:outline-none focus:ring-1 focus:ring-[#2563EB]" />
+            <i class="fas fa-search absolute top-1/2 right-3 -translate-y-1/2 text-[#94A3B8] text-[12px]"></i>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-[12px] text-[#475569] border-separate border-spacing-y-2">
+            <thead>
+              <tr class="text-[#475569] font-semibold border-b border-[#E2E8F0]">
+                <th class="text-left pl-4 py-2">
+                  <i class="far fa-square text-[14px] mr-1"></i> Nama Produk
+                </th>
+                <th class="text-left py-2">SKU</th>
+                <th class="text-left py-2">Kategori</th>
+                <th class="text-left py-2">Satuan</th>
+                <th class="text-right pr-4 py-2">Harga Beli</th>
+                <th class="text-right pr-4 py-2">Harga Jual</th>
+                <th class="text-right pr-4 py-2">Qty</th>
+                <th class="text-right pr-4 py-2">HPP</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% const products = [
+                { nama: 'Chelsea Boots', sku: 'CB1', kategori: 'Shoes', satuan: 'Pcs', beli: '299.000', jual: '499.000', qty: 0, hpp: '1.164' },
+                { nama: 'iMac Computer', sku: 'COM1', kategori: 'Office Asset', satuan: 'Pcs', beli: '0', jual: '25.000.000', qty: 0, hpp: '0' },
+                { nama: 'Kneel High Boots', sku: 'KH1', kategori: 'Shoes', satuan: 'Pcs', beli: '299.000', jual: '499.000', qty: 0, hpp: '1.403' }
+              ]; %>
+              <% products.forEach(p => { %>
+              <tr class="bg-white rounded-md shadow-sm border border-[#E2E8F0]">
+                <td class="pl-4 py-3 align-top">
+                  <input type="checkbox" class="align-middle" />
+                  <span class="inline-block ml-2 align-middle text-[#2563EB] font-semibold"><%= p.nama %></span>
+                </td>
+                <td class="py-3 align-top"><%= p.sku %></td>
+                <td class="py-3 align-top"><%= p.kategori %></td>
+                <td class="py-3 align-top"><%= p.satuan %></td>
+                <td class="py-3 align-top text-right pr-4"><%= p.beli %></td>
+                <td class="py-3 align-top text-right pr-4"><%= p.jual %></td>
+                <td class="py-3 align-top text-right pr-4"><%= p.qty %></td>
+                <td class="py-3 align-top text-right pr-4"><%= p.hpp %></td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+

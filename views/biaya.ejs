@@ -1,0 +1,137 @@
+
+<section class="content">
+  <div class="container-fluid">
+
+    <!-- Header Bar -->
+    <div class="bg-[#F4F7FA] border-b border-[#E2E8F0] px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <h1 class="text-[18px] font-semibold leading-6">Biaya</h1>
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3 text-[13px] font-normal text-[#475569]">
+        <div class="flex items-center gap-1 border border-[#CBD5E1] rounded px-2 py-[6px] cursor-pointer select-none">
+          <i class="fas fa-chart-bar text-[12px]"></i>
+          <span>Laporan</span>
+          <i class="fas fa-chevron-down text-[10px]"></i>
+        </div>
+        <div class="flex items-center gap-1 border border-[#CBD5E1] rounded px-2 py-[6px] cursor-pointer select-none">
+          <i class="fas fa-question-circle text-[12px]"></i>
+          <span>Panduan</span>
+          <i class="fas fa-chevron-down text-[10px]"></i>
+        </div>
+        <button class="bg-[#2563EB] text-white text-[13px] font-semibold rounded px-4 py-[6px] hover:bg-[#1D4ED8] transition">
+          + Tambah
+        </button>
+        <div class="flex items-center gap-1 border border-[#CBD5E1] rounded px-2 py-[6px] cursor-pointer select-none">
+          <i class="fas fa-file-import text-[12px]"></i>
+          <span>Import</span>
+          <i class="fas fa-chevron-down text-[10px]"></i>
+        </div>
+        <button class="flex items-center gap-1 border border-[#CBD5E1] rounded px-3 py-[6px] text-[13px] font-normal hover:bg-[#E2E8F0] transition">
+          <i class="fas fa-print text-[12px]"></i> Print
+        </button>
+        <button class="text-[#475569] hover:bg-[#E2E8F0] rounded px-2 py-[6px]">
+          <i class="fas fa-ellipsis-v text-[14px]"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Statistik Kartu -->
+    <div class="px-6 mt-6 flex flex-wrap gap-4 max-w-full overflow-x-auto">
+      <% const cards = [
+        { color: '#FCD79E', text: '#924A00', total: '7.125.000', label: 'Bulan Ini', count: 7 },
+        { color: '#FF4D6D', text: 'white', total: '22.261.800', label: '30 Hari Lalu', count: 23 },
+        { color: '#FF8C5A', text: 'white', total: '17.005.200', label: 'Belum Dibayar', count: 15 },
+        { color: '#2DBE4F', text: 'white', total: '15.979.200', label: 'Jatuh Tempo', count: 13 }
+      ]; %>
+      <% cards.forEach(card => { %>
+      <div class="bg-white rounded-md shadow-sm flex items-center gap-4 px-4 py-3 min-w-[220px]">
+        <div class="flex items-center justify-center w-8 h-8 rounded-full" style="background:<%= card.color %>; color:<%= card.text %>"><%= card.count %></div>
+        <div class="text-[13px] font-semibold leading-5">
+          <div class="text-[15px] font-bold text-[#1E293B]"><%= card.total %></div>
+          <div class="text-[10px] font-semibold text-[#475569]"><%= card.label %></div>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+
+    <!-- Tombol Lihat Selengkapnya -->
+    <div class="mt-4 text-center text-[12px] text-[#2563EB] cursor-pointer select-none">
+      Lihat Selengkapnya
+      <div class="flex justify-center mt-1">
+        <i class="fas fa-chevron-down text-[12px]"></i>
+      </div>
+    </div>
+
+    <!-- Tabel -->
+    <div class="mt-6 px-6 pb-10">
+      <div class="bg-white rounded-md shadow-sm p-4">
+        <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+          <div class="flex gap-2 flex-wrap">
+            <% ['Semua', 'Belum Dibayar', 'Dibayar Sebagian', 'Lunas'].forEach((status, index) => { %>
+            <button class="<%= index === 0 ? 'text-[#2563EB] border-[#2563EB] font-semibold hover:bg-[#E0E7FF]' : 'text-[#475569] border-[#CBD5E1] font-normal hover:bg-[#F1F5F9]' %> border rounded px-3 py-1 text-[12px] transition"><%= status %></button>
+            <% }) %>
+            <div class="relative">
+              <button class="flex items-center gap-1 text-[#475569] border border-[#CBD5E1] rounded px-3 py-1 text-[12px] font-normal hover:bg-[#F1F5F9] transition">
+                Lainnya <i class="fas fa-chevron-down text-[10px]"></i>
+              </button>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-3 items-center">
+            <div class="relative text-[12px] text-[#475569]">
+              <input type="text" placeholder="Cari" class="border border-[#CBD5E1] rounded px-3 py-1 w-48 focus:outline-none focus:ring-1 focus:ring-[#2563EB] focus:border-[#2563EB]" />
+              <i class="fas fa-search absolute top-1/2 right-3 -translate-y-1/2 text-[#94A3B8] text-[12px]"></i>
+            </div>
+            <div class="flex items-center gap-1 border border-[#CBD5E1] rounded px-3 py-1 text-[12px] text-[#475569]">
+              <input type="text" value="14/07/2024" class="w-24 text-[12px] text-[#475569] focus:outline-none" readonly />
+              <i class="fas fa-arrow-right text-[10px]"></i>
+              <input type="text" value="14/07/2025" class="w-24 text-[12px] text-[#475569] focus:outline-none" readonly />
+              <i class="far fa-calendar-alt text-[14px]"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-[12px] text-[#475569] border-separate border-spacing-y-2">
+            <thead>
+              <tr class="text-[#475569] font-semibold border-b border-[#E2E8F0]">
+                <th class="text-left pl-4 py-2"><i class="far fa-square text-[14px] mr-1"></i> Tanggal</th>
+                <th class="text-left py-2">Nomor</th>
+                <th class="text-left py-2">Referensi</th>
+                <th class="text-left py-2">Penerima</th>
+                <th class="text-left py-2">Status</th>
+                <th class="text-right pr-4 py-2">Sisa Tagihan</th>
+                <th class="text-right pr-4 py-2">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% const data = [
+                { tanggal: '08/07/2025', nomor: 'EXP/00041', penerima: 'Balangga Laksana Wacana Saputra', sub: 'PJ Novitasari Mandasari', status: 'Belum Dibayar', warna: '#FF4D6D', sisa: '792.000', total: '792.000' },
+                { tanggal: '08/07/2025', nomor: 'EXP/00040', penerima: 'Ellis Farida Haryanti', sub: 'Fa Novitasari Tbk', status: 'Belum Dibayar', warna: '#FF4D6D', sisa: '666.000', total: '666.000' },
+                { tanggal: '07/07/2025', nomor: 'EXP/00039', penerima: 'POS Customer', sub: '', status: 'Lunas', warna: '#2DBE4F', sisa: '0', total: '500.000' }
+              ]; %>
+              <% data.forEach(row => { %>
+              <tr class="bg-white rounded-md shadow-sm border border-[#E2E8F0]">
+                <td class="pl-4 py-3 align-top">
+                  <input type="checkbox" class="align-middle" />
+                  <span class="inline-block ml-2 align-middle"><%= row.tanggal %></span>
+                </td>
+                <td class="py-3 align-top text-[#2563EB]"><a href="#" class="hover:underline"><%= row.nomor %></a></td>
+                <td class="py-3 align-top"></td>
+                <td class="py-3 align-top">
+                  <div class="font-normal text-[12px] text-[#1E293B]"><%= row.penerima %></div>
+                  <% if (row.sub) { %>
+                    <div class="text-[10px] text-[#64748B]"><%= row.sub %></div>
+                  <% } %>
+                </td>
+                <td class="py-3 align-top text-[12px]" style="color:<%= row.warna %>"><%= row.status %></td>
+                <td class="py-3 align-top text-right pr-4"><%= row.sisa %></td>
+                <td class="py-3 align-top text-right pr-4"><%= row.total %></td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
