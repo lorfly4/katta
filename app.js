@@ -11,10 +11,7 @@ app.set('views', path.join(__dirname, 'views'));
 
 const expressLayouts = require('express-ejs-layouts');
 app.use(expressLayouts);
-app.set('layout', 'layouts/template'); // default layout
 
-
-// Middleware
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -23,6 +20,9 @@ app.use(session({
     resave: false,
     saveUninitialized: false
 }));
+
+const setLayoutByRole = require('./middleware/setLayoutByRole');
+app.use(setLayoutByRole);
 
 // Routes
 const router = require('./routes/index');
