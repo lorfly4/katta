@@ -1,0 +1,131 @@
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">Konfigurasi Email</div>
+        <div class="card-body">
+          <form action="/prosesemail" method="POST">
+            <div class="form-group mb-3">
+              <label for="email_type">Tipe Email</label>
+              <select
+                id="email_type"
+                name="email_type"
+                class="form-control"
+                onchange="showConfigEmail(this)"
+              >
+                <option value="">-- Pilih Tipe Email --</option>
+                <option value="smtp">SMTP</option>
+                <option value="gmail">Gmail</option>
+              </select>
+            </div>
+
+            <!-- SMTP Config -->
+            <div
+              id="email_smtp_config"
+              class="email-config"
+              style="display: none"
+            >
+              <div class="form-group mb-3">
+                <label for="email_host">Host</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="email_host"
+                  name="email_host"
+                  placeholder="contoh: smtp.gmail.com"
+                  value="<%= emailConfig.type === 'smtp' ? emailConfig.host || '' : '' %>"
+                />
+              </div>
+              <div class="form-group mb-3">
+                <label for="email_port">Port</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="email_port"
+                  name="email_port"
+                  placeholder="contoh: 587"
+                  value="<%= emailConfig.type === 'smtp' ? emailConfig.port || '' : '' %>"
+                />
+              </div>
+              <div class="form-group mb-3">
+                <label for="email_username_smtp">Username</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="email_username_smtp"
+                  name="email_username_smtp"
+                  placeholder="contoh: emailanda@gmail.com"
+                  value="<%= emailConfig.type === 'smtp' ? emailConfig.username || '' : '' %>"
+                />
+              </div>
+              <div class="form-group mb-3">
+                <label for="email_password_smtp">Password</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="email_password_smtp"
+                  name="email_password_smtp"
+                  value="<%= emailConfig.type === 'smtp' ? emailConfig.password || '' : '' %>"
+                />
+              </div>
+            </div>
+
+            <!-- Gmail Config -->
+            <div
+              id="email_gmail_config"
+              class="email-config"
+              style="display: none"
+            >
+              <div class="form-group mb-3">
+                <label for="email_username_gmail">Username</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="email_username_gmail"
+                  name="email_username_gmail"
+                  placeholder="contoh: emailanda@gmail.com"
+                  value="<%= emailConfig.type === 'gmail' ? emailConfig.username || '' : '' %>"
+                />
+              </div>
+              <div class="form-group mb-3">
+                <label for="email_password_gmail">Password</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="email_password_gmail"
+                  name="email_password_gmail"
+                  value="<%= emailConfig.type === 'gmail' ? emailConfig.password || '' : '' %>"
+                />
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-3">Simpan</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  function showConfigEmail(el) {
+    var val = el.value;
+    var configs = document.querySelectorAll(".email-config");
+    configs.forEach(function (cfg) {
+      cfg.style.display = "none";
+    });
+    if (val === "smtp") {
+      document.getElementById("email_smtp_config").style.display = "block";
+    } else if (val === "gmail") {
+      document.getElementById("email_gmail_config").style.display = "block";
+    }
+  }
+
+  // Otomatis set value dan tampilkan config sesuai data dari backend
+  window.onload = function () {
+    var type = "<%= emailConfig.type || '' %>";
+    if (type) {
+      document.getElementById("email_type").value = type;
+      showConfigEmail(document.getElementById("email_type"));
+    }
+  };
+</script>

@@ -1,0 +1,103 @@
+<div class="container mt-4">
+  <!-- Header -->
+  <div class="row mb-2">
+    <div class="col-sm-6">
+      <h1 class="m-0">Tabel Interaksi</h1>
+    </div>
+    <div class="col-sm-6">
+      <ol class="breadcrumb float-sm-right" style="background-color: #f4f6f9">
+        <li class="breadcrumb-item"><a href="#">Halaman Utama</a></li>
+        <li class="breadcrumb-item active">Tabel Interaksi</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Tombol dan Search -->
+  <div class="d-flex justify-content-between mb-2">
+    <a href="/interactions/tambah" class="btn btn-sm btn-success"
+      >Tambah Interaksi</a
+    >
+    <form action="/interactions" method="GET" class="d-flex">
+      <input
+        type="text"
+        name="search"
+        class="form-control form-control-sm"
+        placeholder="Cari interaksi..."
+        value="<%= typeof search !== 'undefined' ? search : '' %>"
+      />
+      <button type="submit" class="btn btn-sm btn-primary ml-2">Cari</button>
+    </form>
+  </div>
+
+  <!-- Flash message -->
+  <% if (typeof success !== 'undefined') { %>
+  <div class="alert alert-success" role="alert"><%= success %></div>
+  <script>
+    setTimeout(function () {
+      document.querySelector(".alert").remove();
+    }, 3000);
+  </script>
+  <% } %>
+
+  <!-- Tabel -->
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered">
+      <thead class="table-dark">
+        <tr class="text-center align-middle">
+          <th style="width: 3em">No</th>
+          <th>Nama Klien</th>
+          <th>Tipe Interaksi</th>
+          <th>Catatan</th>
+          <th>Dibuat Oleh</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (interactions && interactions.length > 0) { %> <%
+        interactions.forEach(function(interaction, idx) { %>
+        <tr>
+          <td class="text-center"><%= idx + 1 %></td>
+          <td><%= interaction.client_name %></td>
+          <td><%= interaction.type %></td>
+          <td><%= interaction.notes %></td>
+          <td><%= interaction.created_by_name %></td>
+          <td class="text-center">
+            <a
+              href="/interactions/edit/<%= interaction.id %>"
+              class="btn btn-sm btn-warning"
+              >Edit</a
+            >
+            <form
+              action="/interactions/delete/<%= interaction.id %>"
+              method="POST"
+              class="d-inline"
+              onsubmit="return confirmDelete(event, this)"
+            >
+              <input type="hidden" name="_method" value="DELETE" />
+              <button class="btn btn-sm btn-danger">Hapus</button>
+            </form>
+          </td>
+        </tr>
+        <% }); %> <% } else { %>
+        <tr>
+          <td class="text-center" colspan="6">Tidak ada data</td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination (optional, jika ada) -->
+  <% if (typeof pagination !== 'undefined') { %>
+  <div class="d-flex justify-content-end"><%= pagination %></div>
+  <% } %>
+</div>
+
+<script>
+  function confirmDelete(event, form) {
+    event.preventDefault();
+    if (confirm("Apakah Anda yakin ingin menghapus interaksi ini?")) {
+      form.submit();
+    }
+  }
+</script>

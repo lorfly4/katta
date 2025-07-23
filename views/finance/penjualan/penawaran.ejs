@@ -1,0 +1,90 @@
+<section class="content">
+  <div class="container-fluid">
+    <div class="max-w-[1100px] mx-auto p-6">
+
+      <!-- Section Header -->
+      <div class="bg-white rounded-lg p-6 shadow-sm">
+        <!-- Navbar -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+          <h1 class="text-2xl font-semibold text-gray-800">Penawaran penjualan</h1>
+          <div class="flex items-center gap-2 flex-wrap">
+            <a href="/penjualan/penawaran/create" class="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded px-3 py-2">
+              <i class="fas fa-plus"></i> Tambah
+            </a>
+            <button type="button" class="flex items-center gap-1 border border-gray-300 hover:border-gray-400 text-gray-700 text-sm rounded px-3 py-2">
+              <i class="fas fa-file-import"></i> Import <i class="fas fa-caret-down text-xs"></i>
+            </button>
+            <button type="button" class="flex items-center gap-1 border border-gray-300 hover:border-gray-400 text-gray-700 text-sm rounded px-3 py-2">
+              <i class="fas fa-print"></i> Print
+            </button>
+            <button type="button" class="text-gray-500 hover:text-gray-700 p-2 rounded" aria-label="More options">
+              <i class="fas fa-ellipsis-v"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter -->
+        <form method="GET" class="flex flex-wrap items-center gap-3 mb-6">
+          <input
+            type="text"
+            name="search"
+            placeholder="Cari Nomor/Vendor"
+            value="<%= search || '' %>"
+            class="border rounded px-3 py-2 text-sm w-full sm:w-auto"
+          />
+          <select name="status" class="border rounded px-3 py-2 text-sm">
+            <option value="">Semua Status</option>
+            <option value="Open" <%= status === 'Open' ? 'selected' : '' %>>Open</option>
+            <option value="Selesai" <%= status === 'Selesai' ? 'selected' : '' %>>Selesai</option>
+            <option value="Dipesan Sebagian" <%= status === 'Dipesan Sebagian' ? 'selected' : '' %>>Dipesan Sebagian</option>
+          </select>
+          <input type="date" name="start_date" value="<%= start_date || '' %>" class="border rounded px-3 py-2 text-sm" />
+          <span class="text-gray-500">s/d</span>
+          <input type="date" name="end_date" value="<%= end_date || '' %>" class="border rounded px-3 py-2 text-sm" />
+          <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded">
+            Filter
+          </button>
+        </form>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm text-left text-gray-700 border-separate border-spacing-y-2">
+            <thead class="bg-gray-100 font-semibold text-xs text-gray-600">
+              <tr>
+                <th class="pl-6 pr-3 py-3">Nomor</th>
+                <th class="px-3 py-3">Vendor</th>
+                <th class="px-3 py-3">Referensi</th>
+                <th class="px-3 py-3">Tanggal</th>
+                <th class="px-3 py-3">Status</th>
+                <th class="px-3 py-3 text-right pr-6">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (penawaran.length === 0) { %>
+                <tr>
+                  <td colspan="6" class="text-center py-6 text-gray-400">Tidak ada data.</td>
+                </tr>
+              <% } else { %>
+                <% penawaran.forEach(item => { %>
+                  <tr class="bg-white border rounded-lg">
+                    <td class="pl-6 pr-3 py-4 text-xs"><%= item.nomor %></td>
+                    <td class="px-3 py-4 text-xs"><%= item.vendor %></td>
+                    <td class="px-3 py-4 text-xs"><%= item.referensi || '-' %></td>
+                    <td class="px-3 py-4 text-xs"><%= item.tanggal %></td>
+                    <td class="px-3 py-4 text-xs <%= item.status === 'Open' ? 'text-red-500' : 'text-green-600' %>">
+                      <%= item.status %>
+                    </td>
+                    <td class="px-3 py-4 text-xs text-right pr-6">
+                      <%= Number(item.total || 0).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }) %>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>

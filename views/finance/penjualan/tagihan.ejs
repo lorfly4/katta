@@ -1,0 +1,93 @@
+<section class="content">
+  <div class="container-fluid">
+
+    <!-- Awal Konten Tailwind -->
+    <main class="pb-10">
+      <section class="bg-white rounded-lg shadow-sm p-6 mt-4 w-100 overflow-x-auto scrollbar-thin" style="box-shadow: inset 10px 0 15px -10px #e0e7ff;">
+        <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
+          <h1 class="text-2xl font-semibold text-[#111827]">Tagihan</h1>
+          <div class="flex flex-wrap gap-2 text-xs font-normal text-[#374151]">
+            <button class="flex items-center gap-1 border border-[#D1D5DB] rounded px-3 py-1 hover:bg-[#F3F4F6]">
+              <i class="fas fa-chart-bar text-[#6B7280]"></i> Laporan <i class="fas fa-chevron-down text-[#6B7280]"></i>
+            </button>
+            <button class="flex items-center gap-1 border border-[#D1D5DB] rounded px-3 py-1 hover:bg-[#F3F4F6]">
+              <i class="far fa-question-circle text-[#6B7280]"></i> Panduan <i class="fas fa-chevron-down text-[#6B7280]"></i>
+            </button>
+            <a href="/penjualan/tagihan/create" class="flex items-center gap-1 bg-primary text-white rounded px-3 py-1 hover:bg-primary/90">
+              <i class="fas fa-plus"></i> Tambah <i class="fas fa-chevron-down"></i>
+            </a>
+            <button class="flex items-center gap-1 border border-[#D1D5DB] rounded px-3 py-1 hover:bg-[#F3F4F6]">
+              <i class="fas fa-external-link-alt text-[#6B7280]"></i> Import <i class="fas fa-chevron-down text-[#6B7280]"></i>
+            </button>
+            <button class="flex items-center gap-1 border border-[#D1D5DB] rounded px-3 py-1 hover:bg-[#F3F4F6]">
+              <i class="fas fa-print text-[#6B7280]"></i> Print
+            </button>
+            <button class="flex items-center justify-center w-8 h-8 rounded hover:bg-[#F3F4F6]">
+              <i class="fas fa-ellipsis-v text-[#6B7280]"></i>
+            </button>
+          </div>
+        </header>
+
+        <form method="GET" action="/penjualan/tagihan" class="flex flex-wrap items-center gap-3 mb-4">
+
+  <input type="search" name="search" placeholder="Cari" class="border border-[#D1D5DB] rounded px-3 py-1 text-xs w-40 sm:w-48 focus:outline-none focus:ring-1 focus:ring-[#3B82F6] text-[#6B7280]" value="<%= typeof search !== 'undefined' ? search : '' %>"/>
+
+  <div class="flex items-center gap-1 border border-[#D1D5DB] rounded px-3 py-1 text-xs text-[#374151]">
+    <input type="date" name="start_date" value="<%= typeof start_date !== 'undefined' ? start_date : '' %>" class="text-xs focus:outline-none" />
+    <span class="text-[#6B7280]">→</span>
+    <input type="date" name="end_date" value="<%= typeof end_date !== 'undefined' ? end_date : '' %>" class="text-xs focus:outline-none" />
+    <i class="far fa-calendar-alt text-[#6B7280]"></i>
+  </div>
+
+  <select name="status" class="border border-[#D1D5DB] rounded px-3 py-1 text-xs text-[#374151] focus:outline-none focus:ring-1 focus:ring-[#3B82F6]">
+    <option value="">Semua Status</option>
+    <option value="Belum Dibayar" <%= status === 'Belum Dibayar' ? 'selected' : '' %>>Belum Dibayar</option>
+    <option value="Dibayar Sebagian" <%= status === 'Dibayar Sebagian' ? 'selected' : '' %>>Dibayar Sebagian</option>
+    <option value="Lunas" <%= status === 'Lunas' ? 'selected' : '' %>>Lunas</option>
+  </select>
+
+  <button type="submit" class="flex items-center gap-1 border border-[#D1D5DB] rounded px-3 py-1 text-xs text-[#374151] hover:bg-[#F3F4F6]">
+    <i class="fas fa-filter"></i> Filter
+  </button>
+</form>
+
+
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse text-xs text-[#6B7280]">
+            <thead class="border-b border-[#E5E7EB] bg-[#F9FAFB] text-[#6B7280]">
+              <tr>
+                <th class="p-3 text-left"><input type="checkbox" /></th>
+                <th class="p-3 text-left">Nomor <i class="fas fa-sort ml-1"></i></th>
+                <th class="p-3 text-left">Pelanggan <i class="fas fa-sort ml-1"></i></th>
+                <th class="p-3 text-left">Referensi <i class="fas fa-sort ml-1"></i></th>
+                <th class="p-3 text-left">Tanggal <i class="fas fa-sort ml-1"></i></th>
+                <th class="p-3 text-left">Tgl. Jatuh Tempo <i class="fas fa-sort ml-1"></i></th>
+                <th class="p-3 text-left">Status <i class="fas fa-sort ml-1"></i></th>
+                <th class="p-3 text-left">Sisa Tagihan <i class="fas fa-sort ml-1"></i></th>
+                <th class="p-3 text-left bg-[#F3F4F6]">Total <i class="fas fa-sort ml-1"></i></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#E5E7EB]">
+              <% tagihan.forEach(function(tagihan){ %>
+              <tr class="hover:bg-[#F9FAFB]">
+                <td class="p-3"><input type="checkbox" /></td>
+                <td class="p-3 text-[#2563EB]"><a href="#" class="hover:underline"><%= tagihan.nomor %></a></td>
+                <td class="p-3 whitespace-pre-line"><%= tagihan.pelanggan %></td>
+                <td class="p-3"></td>
+                <td class="p-3"><%= tagihan.tanggal %></td>
+                <td class="p-3"><%= tagihan.tgl_jatuh_tempo %></td>
+                <td class="p-3 text-[#DC2626]"><%= tagihan.status %></td>
+                <td class="p-3"><%= tagihan.sisa_tagihan %></td>
+                <td class="p-3 bg-[#F3F4F6]"><%= tagihan.total %></td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+    <!-- Akhir Konten Tailwind -->
+
+  </div>
+</section>
+

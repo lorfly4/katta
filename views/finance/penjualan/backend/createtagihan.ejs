@@ -1,0 +1,99 @@
+<div class="container mt-4">
+  <div class="row mb-2">
+    <div class="col-sm-6">
+      <h1 class="m-0">Tambah Klien</h1>
+    </div>
+    <div class="col-sm-6">
+      <ol class="breadcrumb float-sm-right" style="background-color:#f4f6f9;">
+        <li class="breadcrumb-item"><a href="#">Home</a></li>
+        <li class="breadcrumb-item active">Tambah Klien</li>
+      </ol>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          Input Data Klien
+        </div>
+        <div class="card-body">
+          <form method="POST" action="/penjualan/tagihan/create">
+            <div class="form-group">
+              <label for="nomor">Nomor</label>
+              <input type="text" id="nomor" name="nomor" placeholder="Contoh: PO/0001" class="w-full border rounded px-2 py-1 mb-2" />
+            </div>
+
+            <div class="form-group">
+              <label for="pelanggan">Pelanggan</label>
+              <input type="text" id="pelanggan" name="pelanggan" placeholder="Contoh: PT. ABC" class="w-full border rounded px-2 py-1 mb-2" />
+            </div>
+
+            <div class="form-group">
+              <label for="referensi">Referensi</label>
+              <input type="text" id="referensi" name="referensi" placeholder="Contoh: INV/123456" class="w-full border rounded px-2 py-1 mb-2" />
+            </div>
+
+            <div class="form-group">
+              <label for="tanggal">Tanggal</label>
+              <input type="date" id="tanggal" name="tanggal" placeholder="Contoh: 2025-01-01" class="w-full border rounded px-2 py-1 mb-2" />
+            </div>
+
+            <div class="form-group">
+              <label for="tgl_jatuh_tempo">Tanggal Jatuh Tempo</label>
+              <input type="date" id="tgl_jatuh_tempo" name="tgl_jatuh_tempo" placeholder="Contoh: 2025-01-15" class="w-full border rounded px-2 py-1 mb-2" />
+            </div>
+
+            <div class="form-group">
+              <label for="status">Status</label>
+              <select id="status" name="status" class="w-full border rounded px-2 py-1 mb-2">
+                <option value="">-- Pilih Status --</option>
+                <option value="Belum Dibayar">Belum Dibayar</option>
+                <option value="Dibayar Sebagian">Dibayar Sebagian</option>
+                <option value="Lunas">Lunas</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="sisa_tagihan">Sisa Tagihan</label>
+              <input type="number" id="sisa_tagihan" name="sisa_tagihan" placeholder="Contoh: 1000000" class="w-full border rounded px-2 py-1 mb-2" />
+            </div>
+
+            <div class="form-group">
+              <label for="total">Total</label>
+              <input type="number" id="total" name="total" placeholder="Contoh: 1500000" class="w-full border rounded px-2 py-1 mb-2" />
+            </div>
+
+            <button type="submit" class="btn btn-primary" onclick="return validateForm(event)">Simpan</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  function validateForm(event) {
+    const nomor = document.getElementById('nomor').value.trim();
+    const pelanggan = document.getElementById('pelanggan').value.trim();
+
+    if (nomor === '' || pelanggan === '') {
+      Swal.fire('Error!', 'Nomor dan Pelanggan wajib diisi.', 'error');
+      event.preventDefault();
+      return false;
+    }
+
+    // Tampilkan alert lalu submit form manual setelah alert
+    event.preventDefault(); // cegah form langsung submit
+    Swal.fire({
+      title: 'Data disimpan!',
+      text: 'Tagihan berhasil ditambahkan.',
+      icon: 'success',
+    }).then(() => {
+      event.target.closest('form').submit();
+    });
+
+    return false;
+  }
+</script>
+
+

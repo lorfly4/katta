@@ -1,0 +1,93 @@
+<section class="content">
+  <div class="container-fluid">
+
+    <!-- Awal konten Tailwind -->
+    <div class="max-w-full p-6">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+        <h1 class="text-2xl font-semibold mb-4 md:mb-0">Pesanan Pembelian</h1>
+        <div class="flex flex-wrap gap-2 items-center">
+          <a href="/pembelian/pemesanan/create" class="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 px-4 rounded">
+            <i class="fas fa-plus"></i> Tambah
+          </a>
+          <button class="flex items-center gap-1 border border-gray-300 hover:border-gray-400 text-gray-700 text-sm font-normal py-2 px-3 rounded" type="button">
+            <i class="far fa-file-import"></i> Import <i class="fas fa-caret-down text-xs"></i>
+          </button>
+          <button class="flex items-center gap-1 border border-gray-300 hover:border-gray-400 text-gray-700 text-sm font-normal py-2 px-3 rounded" type="button">
+            <i class="fas fa-print"></i> Print
+          </button>
+          <button class="text-gray-600 hover:text-gray-800 p-2 rounded" type="button" aria-label="More options">
+            <i class="fas fa-ellipsis-v"></i>
+          </button>
+        </div>
+      </div>
+
+      <form method="GET" action="/pembelian/pemesanan" class="w-full">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4 md:gap-0">
+
+    <div class="flex gap-2 items-center">
+      <select name="status" class="border border-gray-300 rounded px-3 py-1 text-sm text-gray-700">
+        <option value="">Semua</option>
+        <option value="Draft" <%= status === 'Draft' ? 'selected' : '' %>>Draft</option>
+        <option value="Disetujui" <%= status === 'Disetujui' ? 'selected' : '' %>>Disetujui</option>
+        <option value="Dikirim Sebagian" <%= status === 'Dikirim Sebagian' ? 'selected' : '' %>>Dikirim Sebagian</option>
+        <option value="Selesai" <%= status === 'Selesai' ? 'selected' : '' %>>Selesai</option>
+      </select>
+      <button type="submit" class="flex items-center gap-1 border border-gray-300 rounded px-3 py-1 text-gray-700 text-sm hover:bg-gray-100">
+        <i class="fas fa-filter"></i> Terapkan
+      </button>
+    </div>
+
+    <div class="flex flex-wrap gap-3 items-center">
+      <input type="search" name="search" placeholder="Cari" value="<%= search || '' %>" class="border border-blue-500 rounded px-3 py-1 text-sm text-gray-600 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" style="min-width: 180px" />
+      <div class="flex items-center border border-gray-300 rounded overflow-hidden text-gray-600 text-sm">
+        <input type="date" name="start_date" value="<%= start_date || '' %>" class="px-3 py-1 w-[120px] text-sm text-gray-600 focus:outline-none" />
+        <span class="px-2 border-l border-r border-gray-300 select-none">→</span>
+        <input type="date" name="end_date" value="<%= end_date || '' %>" class="px-3 py-1 w-[120px] text-sm text-gray-600 focus:outline-none" />
+      </div>
+      <button type="submit" class="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">
+        Cari
+      </button>
+    </div>
+
+  </div>
+</form>
+
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-left text-sm text-gray-700 border-separate border-spacing-y-2">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-200">
+              <th class="pl-6 pr-3 py-3 w-10"><input type="checkbox" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" /></th>
+              <th class="px-3 py-3 font-semibold cursor-pointer select-none">Nomor <i class="fas fa-sort text-gray-400 ml-1"></i></th>
+              <th class="px-3 py-3 font-semibold cursor-pointer select-none">Vendor <i class="fas fa-sort text-gray-400 ml-1"></i></th>
+              <th class="px-3 py-3 font-semibold cursor-pointer select-none">Referensi <i class="fas fa-sort text-gray-400 ml-1"></i></th>
+              <th class="px-3 py-3 font-semibold cursor-pointer select-none">Tanggal <i class="fas fa-sort text-gray-400 ml-1"></i></th>
+              <th class="px-3 py-3 font-semibold cursor-pointer select-none">Tgl. Jatuh Tempo <i class="fas fa-sort text-gray-400 ml-1"></i></th>
+              <th class="px-3 py-3 font-semibold cursor-pointer select-none">Status <i class="fas fa-sort text-gray-400 ml-1"></i></th>
+              <th class="pr-6 pl-3 py-3 font-semibold cursor-pointer select-none text-right">Total <i class="fas fa-sort text-gray-400 ml-1"></i></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% pemesanan.forEach((pemesanan) => { %>
+            <tr class="<%= pemesanan.status === 'Draft' ? 'bg-gray-50' : 'bg-white' %> rounded-lg shadow-sm">
+              <td class="pl-6 pr-3 py-4 align-top"><input type="checkbox" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" /></td>
+              <td class="px-3 py-4 align-top text-blue-600 font-normal"><a href="#" class="hover:underline"><%= pemesanan.nomor %></a></td>
+              <td class="px-3 py-4 align-top">
+                <div class="font-semibold leading-tight"><%= pemesanan.vendor %></div>
+                <div class="text-gray-500 text-xs leading-tight"><%= pemesanan.referensi %></div>
+              </td>
+              <td class="px-3 py-4 align-top"><%= pemesanan.referensi ? pemesanan.referensi : '' %></td>
+              <td class="px-3 py-4 align-top"><%= pemesanan.tanggal ? (new Date(pemesanan.tanggal)).toLocaleDateString() : '' %></td>
+              <td class="px-3 py-4 align-top"><%= pemesanan.tgl_jatuh_tempo ? (new Date(pemesanan.tgl_jatuh_tempo)).toLocaleDateString() : '' %></td>
+              <td class="px-3 py-4 align-top text-<%= pemesanan.status === 'Draft' ? 'blue-600' : 'green-600' %> font-normal"><%= pemesanan.status %></td>
+              <td class="pr-6 pl-3 py-4 align-top text-right font-normal"><%= pemesanan.total ? `Rp. ${pemesanan.total.toLocaleString()}` : '' %></td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- Akhir konten Tailwind -->
+
+  </div>
+</section>

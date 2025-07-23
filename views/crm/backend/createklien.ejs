@@ -1,0 +1,64 @@
+<div class="container mt-4">
+  <div class="row mb-2">
+    <div class="col-sm-6">
+      <h1 class="m-0">Tambah Klien</h1>
+    </div>
+    <div class="col-sm-6">
+      <ol class="breadcrumb float-sm-right" style="background-color:#f4f6f9;">
+        <li class="breadcrumb-item"><a href="#">Home</a></li>
+        <li class="breadcrumb-item active">Tambah Klien</li>
+      </ol>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          Input Data Klien
+        </div>
+        <div class="card-body">
+          <form action="/clients" method="POST">
+            <div class="form-group">
+              <label for="nama_klien">Nama Klien</label>
+              <input type="text" class="form-control" id="nama_klien" name="nama_klien" placeholder="Masukkan Nama Klien" required>
+            </div>
+            <div class="form-group">
+              <label for="perusahaan_klien">Perusahaan Klien</label>
+              <input type="text" class="form-control" id="perusahaan_klien" name="perusahaan_klien" placeholder="Masukkan Perusahaan Klien" required>
+            </div>
+            <div class="form-group">
+              <label for="nomor_telpon_klien">Nomor Telpon Klien</label>
+              <input type="text" class="form-control" id="nomor_telpon_klien" name="nomor_telpon_klien" placeholder="Masukkan Nomor Telpon Klien" required>
+            </div>
+            <div class="form-group">
+              <label for="email_klien">Email Klien</label>
+              <input type="text" class="form-control" id="email_klien" name="email_klien" placeholder="Masukkan Email Klien" required>
+            </div>
+            <!--
+            <div class="form-group">
+              <label for="kode_poli">Kode Poli</label>
+              <input type="text" class="form-control" id="kode_poli" name="kode_poli" placeholder="Masukkan Kode Poli">
+            </div>
+            -->
+            <button type="submit" class="btn btn-primary" onclick="return validateForm(event)">Simpan</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  function validateForm(event) {
+    const namaPoli = document.getElementById('nama_poli').value.trim();
+    if (namaPoli !== '') {
+      Swal.fire('Saved!', 'Your data has been saved.', 'success');
+      // Form will submit after alert closes
+      return true;
+    } else {
+      Swal.fire('Error!', 'Please enter a valid Poli name.', 'error');
+      event.preventDefault();
+      return false;
+    }
+  }
+</script>
