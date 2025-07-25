@@ -10,33 +10,46 @@
       </ol>
     </div>
   </div>
+
   <div class="row">
     <div class="col-md-12">
       <div class="card">
-        <div class="card-header">Input Data Produk</div>
+        <div class="card-header">Form Tambah Produk</div>
         <div class="card-body">
           <form
             action="/produk/create"
             method="POST"
             enctype="multipart/form-data"
           >
+            <!-- Nama Produk -->
             <div class="form-group">
-              <label for="kategori">Kategori</label>
+              <label for="nama_produk">Nama Produk</label>
+              <input
+                type="text"
+                class="form-control"
+                id="nama_produk"
+                name="nama_produk"
+                required
+              />
+            </div>
+
+            <!-- Kategori -->
+            <!-- Kategori -->
+            <div class="form-group">
+              <label for="id_kategori">Kategori</label>
               <div style="display: flex; gap: 8px">
                 <select
                   class="form-control"
-                  id="kategori"
-                  name="kategori"
+                  name="id_kategori"
+                  id="id_kategori"
                   required
                   style="flex: 1"
                 >
                   <% if (kategori.length === 0) { %>
                   <option value="">-- Belum ada kategori --</option>
-                  <% } else { %> <% kategori.forEach(function(kat) { %>
-                  <option value="<%= kat.id %>">
-                    <%= kat.nama_kategori %>
-                  </option>
-                  <% }); %> <% } %>
+                  <% } else { %> <% kategori.forEach(k => { %>
+                  <option value="<%= k.id %>"><%= k.nama_kategori %></option>
+                  <% }) %> <% } %>
                 </select>
                 <button
                   type="button"
@@ -116,19 +129,15 @@
                   alert("Nama kategori harus diisi!");
                   return;
                 }
-                // Kirim ke backend via AJAX
                 fetch("/kategori/create", {
                   method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
+                  headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ nama_kategori: nama }),
                 })
                   .then((res) => res.json())
                   .then((data) => {
                     if (data.id) {
-                      // Tambahkan ke select
-                      const select = document.getElementById("kategori");
+                      const select = document.getElementById("id_kategori");
                       const option = document.createElement("option");
                       option.value = data.id;
                       option.textContent = data.nama_kategori;
@@ -142,100 +151,86 @@
                   .catch(() => alert("Gagal menambah kategori"));
               }
             </script>
-            <div class="form-group">
-              <a
-                id="show-hide-gambar"
-                style="display: inline-block; cursor: pointer; color: #007bff"
-                onclick="showHideGambar()"
-                >Tampilkan input foto produk</a
-              >
-              <div
-                id="gambar-wrapper"
-                style="overflow: hidden; transition: max-height 0.5s ease"
-              >
-                <input
-                  type="file"
-                  id="gambar"
-                  name="gambar"
-                  style="width: 100%"
-                  accept="image/*"
-                  onchange="previewGambar(event)"
-                />
-                <img
-                  id="preview-img"
-                  src="#"
-                  alt="Preview"
-                  style="
-                    display: none;
-                    max-width: 150px;
-                    margin-top: 10px;
-                    border: 1px solid #ddd;
-                    border-radius: 4px;
-                  "
-                />
-              </div>
-              <style>
-                #gambar-wrapper {
-                  max-height: 0;
-                  transition: max-height 0.5s ease;
-                }
-                #gambar-wrapper input[type="file"] {
-                  opacity: 0;
-                  pointer-events: none;
-                  transition: opacity 0.5s;
-                }
-                #gambar-wrapper.show {
-                  max-height: 120px;
-                }
-                #gambar-wrapper.show input[type="file"] {
-                  opacity: 1;
-                  pointer-events: auto;
-                }
-                #gambar-wrapper.show #preview-img {
-                  display: block;
-                }
-              </style>
-              <script>
-                function showHideGambar() {
-                  var wrapper = document.getElementById("gambar-wrapper");
-                  var link = document.getElementById("show-hide-gambar");
-                  if (wrapper.classList.contains("show")) {
-                    wrapper.classList.remove("show");
-                    link.textContent = "Tampilkan input foto produk";
-                  } else {
-                    wrapper.classList.add("show");
-                    link.textContent = "Sembunyikan foto produk";
-                  }
-                }
 
-                function previewGambar(event) {
-                  var input = event.target;
-                  var preview = document.getElementById("preview-img");
-                  if (input.files && input.files[0]) {
-                    var reader = new FileReader();
-                    reader.onload = function (e) {
-                      preview.src = e.target.result;
-                      preview.style.display = "block";
-                    };
-                    reader.readAsDataURL(input.files[0]);
-                  } else {
-                    preview.src = "#";
-                    preview.style.display = "none";
-                  }
-                }
-              </script>
-            </div>
+            <!-- SKU -->
             <div class="form-group">
-              <label for="nama-produk">Nama Produk</label>
+              <label for="kode_sku">Kode SKU</label>
               <input
                 type="text"
                 class="form-control"
-                id="nama-produk"
-                name="nama_produk"
-                placeholder="Masukkan Nama Produk"
+                id="kode_sku"
+                name="kode_sku"
                 required
               />
             </div>
+
+            <!-- Serial Number -->
+            <div class="form-group">
+              <label for="serial_number">Serial Number</label>
+              <input
+                type="text"
+                class="form-control"
+                id="serial_number"
+                name="serial_number"
+              />
+            </div>
+
+            <!-- Gudang -->
+            <div class="form-group">
+              <label for="id_gudang">Gudang</label>
+              <select
+                class="form-control"
+                name="id_gudang"
+                id="id_gudang"
+                required
+              >
+                <% if (gudang.length === 0) { %>
+                <option value="">-- Belum ada gudang --</option>
+                <% } else { %> <% gudang.forEach(g => { %>
+                <option value="<%= g.id %>"><%= g.nama_gudang %></option>
+                <% }) %> <% } %>
+              </select>
+            </div>
+
+            <!-- Gambar -->
+            <div class="form-group">
+              <label for="gambar">Gambar Produk</label>
+              <input
+                type="file"
+                class="form-control"
+                id="gambar"
+                name="gambar"
+                accept="image/*"
+              />
+            </div>
+
+            <!-- Harga Beli -->
+            <div class="form-group">
+              <label for="harga_beli">Harga Beli</label>
+              <input
+                type="number"
+                class="form-control"
+                id="harga_beli"
+                name="harga_beli"
+                step="0.01"
+                required
+              />
+            </div>
+
+            <!-- Harga Jual -->
+            <div class="form-group">
+              <label for="harga_jual">Harga Jual</label>
+              <input
+                type="number"
+                class="form-control"
+                id="harga_jual"
+                name="harga_jual"
+                step="0.01"
+                required
+              />
+            </div>
+
+            <!-- Satuan -->
             <div class="form-group">
               <label for="satuan">Satuan</label>
               <input
@@ -243,21 +238,11 @@
                 class="form-control"
                 id="satuan"
                 name="satuan"
-                placeholder="Masukkan Satuan"
                 required
               />
             </div>
-            <div class="form-group">
-              <label for="kode-sku">Kode/SKU</label>
-              <input
-                type="text"
-                class="form-control"
-                id="kode-sku"
-                name="kode_sku"
-                placeholder="Masukkan Kode/SKU"
-                required
-              />
-            </div>
+
+            <!-- Deskripsi -->
             <div class="form-group">
               <label for="deskripsi">Deskripsi</label>
               <textarea
@@ -265,58 +250,14 @@
                 id="deskripsi"
                 name="deskripsi"
                 rows="3"
-                placeholder="Masukkan Deskripsi"
-                required
               ></textarea>
             </div>
-            <div class="form-group">
-              <label for="harga-jual">Harga Jual</label>
-              <input
-                type="number"
-                class="form-control"
-                id="harga-jual"
-                name="harga_jual"
-                placeholder="Masukkan Harga Jual"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label for="harga-beli">Harga Beli</label>
-              <input
-                type="number"
-                class="form-control"
-                id="harga-beli"
-                name="harga_beli"
-                placeholder="Masukkan Harga Beli"
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              class="btn btn-primary"
-              onclick="return validateForm(event)"
-            >
-              Simpan
-            </button>
+
+            <!-- Simpan -->
+            <button type="submit" class="btn btn-primary">Simpan</button>
           </form>
         </div>
       </div>
     </div>
   </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-  function validateForm(event) {
-    const namaProduk = document.getElementById("nama-produk").value.trim();
-    if (namaProduk !== "") {
-      Swal.fire("Saved!", "Your data has been saved.", "success");
-      // Form will submit after alert closes
-      return true;
-    } else {
-      Swal.fire("Error!", "Please enter a valid product name.", "error");
-      event.preventDefault();
-      return false;
-    }
-  }
-</script>

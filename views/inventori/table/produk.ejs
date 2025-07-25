@@ -94,8 +94,8 @@
                 <td class="py-3 align-top"><%= p.kode_sku %></td>
                 <td class="py-3 align-top"><%= p.nama_kategori %></td>
                 <td class="py-3 align-top"><%= p.satuan %></td>
-                <td class="py-3 align-top text-right pr-4"><%= p.harga_beli %></td>
-                <td class="py-3 align-top text-right pr-4"><%= p.harga_jual %></td>
+                <td class="py-3 align-top text-right pr-4"><%= Number(p.harga_beli).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }) %></td>
+                <td class="py-3 align-top text-right pr-4"><%= Number(p.harga_jual).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }) %></td>
                 <td class="py-3 align-top text-right pr-4">0</td>
                 <td class="py-3 align-top text-right pr-4">0</td>
               </tr>

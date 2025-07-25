@@ -26,9 +26,11 @@
             </button>
           </div>
           <button
-            class="inline-flex items-center gap-1 rounded bg-[#3B82F6] px-4 py-1 text-sm font-semibold text-white hover:bg-[#2563EB]"
+            class="inline-flex items-center gap-1 rounded bg-primary px-4 py-1 text-sm font-semibold text-white hover:bg-primary/90"
           >
-            <i class="fas fa-plus"></i> Tambah Gudang
+            <a href="/gudang/create" class="inline-flex items-center gap-1 rounded bg-primary px-4 py-1 text-sm font-semibold text-white hover:bg-primary/90">
+              <i class="fas fa-plus"></i> Tambah Gudang
+            </a>
           </button>
           <button
             class="inline-flex items-center gap-1 rounded border border-gray-300 bg-white px-3 py-1 text-sm font-normal text-[#1E1E1E] hover:bg-gray-50"
@@ -56,14 +58,12 @@
           <label class="text-xs text-[#1E1E1E]" for="toggle-stock"
             >Tampilkan stok per gudang</label
           >
-          <div class="relative">
-            <input class="sr-only peer" id="toggle-stock" type="checkbox" />
-            <div
-              class="w-10 h-5 bg-gray-300 rounded-full peer-checked:bg-[#3B82F6] transition-colors cursor-pointer"
-            ></div>
-            <div
-              class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transform peer-checked:translate-x-5 transition-transform"
-            ></div>
+          <div class="relative inline-block w-10 mr-2 align-middle select-none">
+            <input type="checkbox" class="hidden peer" id="toggle-stock" />
+            <label class="block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer peer-checked:bg-[#3B82F6]" for="toggle-stock">
+              <span class="sr-only">Tampilkan stok per gudang</span>
+              <span class="absolute w-4 h-4 bg-white rounded-full shadow top-0.5 left-0.5 transition" aria-hidden="true"></span>
+            </label>
           </div>
         </div>
         <input
@@ -89,15 +89,12 @@
 
       <!-- Produk Grid -->
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        <%
-          const gudangs = [
-            { nama: 'Unassigned', kode: 'UA' },
-            { nama: 'Gudang Utama', kode: 'GU' },
-            { nama: 'Gudang Elektronik', kode: 'GE' },
-          ];
-          gudangs.forEach((g) => {
-        %>
-        <div class="rounded-lg overflow-hidden shadow-sm">
+        <% if (gudangs.length === 0) { %>
+        <div class="col-span-full text-center text-gray-400">
+          Tidak ada data gudang.
+        </div>
+        <% } else { %> <% gudangs.forEach(g => { %>
+        <div class="rounded-lg overflow-hidden shadow-sm border">
           <img
             src="https://storage.googleapis.com/a1aa/image/a7139a3a-947c-41d4-d635-2c2a2cf1f7e4.jpg"
             class="w-full object-cover"
@@ -105,17 +102,14 @@
             loading="lazy"
           />
           <div
-            class="flex justify-between px-3 py-1 text-[10px] text-[#1E1E1E] bg-white"
+            class="flex justify-between px-3 py-2 text-sm text-[#1E1E1E] bg-white"
           >
             <span class="font-semibold"><%= g.nama %></span>
             <span class="text-right">Kode: <%= g.kode %></span>
           </div>
         </div>
-        <%
-          });
-        %>
+        <% }) %> <% } %>
       </div>
     </main>
   </div>
 </section>
-

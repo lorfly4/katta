@@ -1,0 +1,55 @@
+<section class="content">
+  <div class="container-fluid">
+    <!-- Header Section -->
+    <div class="flex justify-between items-center px-6 py-4 bg-white rounded shadow-sm mb-4">
+      <h1 class="text-lg font-semibold">Daftar Transaksi Stok</h1>
+      <a href="/transaksi/create" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-sm rounded">
+        + Tambah Transaksi
+      </a>
+    </div>
+
+    <!-- Table Section -->
+    <div class="bg-white p-4 rounded shadow-sm">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left border-separate border-spacing-y-2">
+          <thead class="bg-gray-50 text-gray-600 text-xs font-semibold">
+            <tr>
+              <th class="px-4 py-2">Tanggal</th>
+              <th class="px-4 py-2">Nomor</th>
+              <th class="px-4 py-2">Jenis</th>
+              <th class="px-4 py-2">Gudang</th>
+              <th class="px-4 py-2">Referensi</th>
+              <th class="px-4 py-2">Total Produk</th>
+              <th class="px-4 py-2 text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (transaksi.length === 0) { %>
+              <tr>
+                <td colspan="7" class="text-center py-6 text-gray-400">Tidak ada transaksi.</td>
+              </tr>
+            <% } else { %>
+              <% transaksi.forEach(t => { %>
+                <tr class="bg-white border rounded shadow-sm">
+                  <td class="px-4 py-2"><%= t.tanggal %></td>
+                  <td class="px-4 py-2"><%= t.nomor %></td>
+                  <td class="px-4 py-2 font-bold <%= t.tipe === 'in' ? 'text-green-600' : 'text-red-600' %>">
+                    <%= t.tipe === 'in' ? 'Barang Masuk' : 'Barang Keluar' %>
+                  </td>
+                  <td class="px-4 py-2"><%= t.nama_gudang %></td>
+                  <td class="px-4 py-2"><%= t.referensi || '-' %></td>
+                  <td class="px-4 py-2"><%= t.total_produk || 0 %> item</td>
+                  <td class="px-4 py-2 text-center space-x-2">
+                    <a href="/transaksi/<%= t.id %>" class="text-blue-600 hover:underline">Detail</a>
+                    <a href="/transaksi/edit/<%= t.id %>" class="text-yellow-600 hover:underline">Edit</a>
+                    <a href="/transaksi/delete/<%= t.id %>" class="text-red-600 hover:underline" onclick="return confirm('Yakin ingin menghapus?')">Hapus</a>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,40 @@
+<div class="container mt-4">
+  <div class="row mb-2">
+    <div class="col-sm-6">
+      <h1 class="m-0">Tambah Gudang</h1>
+    </div>
+    <div class="col-sm-6">
+      <ol class="breadcrumb float-sm-right" style="background-color:#f4f6f9;">
+        <li class="breadcrumb-item"><a href="#">Home</a></li>
+        <li class="breadcrumb-item active">Tambah Gudang</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          Input Data Gudang
+        </div>
+        <div class="card-body">
+          <form action="/gudang/create" method="POST">
+            <div class="form-group">
+              <label for="nama_gudang">Nama Gudang</label>
+              <input type="text" class="form-control" id="nama_gudang" name="nama_gudang" placeholder="Masukkan Nama Gudang" required>
+            </div>
+            <div class="form-group">
+              <label for="lokasi">Lokasi</label>
+              <input type="text" class="form-control" id="lokasi" name="lokasi" placeholder="Masukkan Lokasi Gudang" required>
+            </div>
+            <div class="form-group">
+              <label for="kode_gudang">Kode Gudang</label>
+              <input type="text" class="form-control" id="kode" name="kode" placeholder="Masukkan Kode Gudang" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Simpan</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

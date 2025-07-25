@@ -1,0 +1,154 @@
+<section class="content">
+  <div class="container mx-auto max-w-3xl p-6 bg-white rounded shadow">
+    <h2 class="text-xl font-semibold mb-4">Tambah Transaksi</h2>
+    <form action="/transaksi/create" method="POST">
+      <div class="mb-4">
+        <label for="nomor" class="block font-medium">Nomor Transaksi</label>
+        <input
+          type="text"
+          id="nomor"
+          name="nomor"
+          required
+          class="w-full border rounded px-3 py-2"
+        />
+      </div>
+
+      <div class="mb-4">
+        <label for="tipe" class="block font-medium">Tipe Transaksi</label>
+        <select
+          name="tipe"
+          id="tipe"
+          required
+          class="w-full border rounded px-3 py-2"
+        >
+          <option value="">-- Pilih Tipe --</option>
+          <option value="in">Barang Masuk</option>
+          <option value="out">Barang Keluar</option>
+        </select>
+      </div>
+
+      <div class="mb-4">
+        <label for="gudang_id" class="block font-medium">Gudang</label>
+        <select
+          name="gudang_id"
+          id="gudang_id"
+          required
+          class="w-full border rounded px-3 py-2"
+        >
+          <option value="">-- Pilih Gudang --</option>
+          <% gudang.forEach(g => { %>
+          <option value="<%= g.id %>"><%= g.nama_gudang %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="mb-4">
+        <label for="tanggal" class="block font-medium">Tanggal Transaksi</label>
+        <input
+          type="date"
+          id="tanggal"
+          name="tanggal"
+          required
+          class="w-full border rounded px-3 py-2"
+        />
+      </div>
+
+      <div class="mb-4">
+        <label for="referensi" class="block font-medium"
+          >Referensi (Opsional)</label
+        >
+        <input
+          type="text"
+          id="referensi"
+          name="referensi"
+          class="w-full border rounded px-3 py-2"
+        />
+      </div>
+
+      <div class="mb-6">
+        <label class="block font-medium mb-2">Detail Produk</label>
+        <div id="produk-wrapper">
+          <div class="grid grid-cols-4 gap-3 mb-2">
+            <label class="font-medium">Produk</label>
+            <label class="font-medium">Qty</label>
+            <label class="font-medium">Harga</label>
+            <div></div>
+          </div>
+          <div class="grid grid-cols-4 gap-3 mb-2">
+            <select
+              name="produk_id[]"
+              id="produk-select"
+              class="border rounded px-2 py-1"
+              required
+            >
+              <option value="" disabled selected>-- Pilih Produk --</option>
+              <% produk.forEach(p => { %>
+              <option value="<%= p.id %>"><%= p.nama_produk %></option>
+              <% }) %>
+            </select>
+
+            <input
+              type="number"
+              name="qty[]"
+              placeholder="Qty"
+              class="border rounded px-2 py-1"
+              min="0"
+              required
+            />
+            <input
+              type="number"
+              name="harga[]"
+              placeholder="Harga"
+              class="border rounded px-2 py-1"
+              min="0"
+              required
+            />
+            <button
+              type="button"
+              onclick="addRow()"
+              class="bg-blue-500 text-white px-2 py-1 rounded"
+            >
+              +
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+      >
+        Simpan Transaksi
+      </button>
+    </form>
+  </div>
+</section>
+
+<select id="produk-template" class="hidden">
+  <option value="" disabled selected>-- Pilih Produk --</option>
+  <% produk.forEach(p => { %>
+  <option value="<%= p.id %>"><%= p.nama_produk %></option>
+  <% }) %>
+</select>
+
+<script>
+  function addRow() {
+    const wrapper = document.getElementById("produk-wrapper");
+    const selectHTML = document.getElementById("produk-template").innerHTML;
+
+    const row = document.createElement("div");
+    row.className = "grid grid-cols-4 gap-3 mb-2";
+    row.innerHTML = `
+      <select name="produk_id[]" id="produk-select" class="border rounded px-2 py-1" required>
+        <option value="">-- Pilih Produk --</option>
+        ${selectHTML}
+      </select>
+      <input type="number" name="qty[]" placeholder="Qty" class="border rounded px-2 py-1" min="0" required/>
+      <input type="number" name="harga[]" placeholder="Harga" class="border rounded px-2 py-1" min="0" required/>
+      <button type="button" onclick="this.parentNode.remove()" class="bg-red-500 text-white px-2 py-1 rounded">
+        -
+      </button>
+    `;
+    wrapper.appendChild(row);
+  }
+</script>

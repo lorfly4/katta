@@ -1,0 +1,88 @@
+<!-- Laporan Transaksi -->
+<section class="content">
+  <div class="container-fluid px-6 py-4">
+    <div class="bg-white rounded shadow-sm p-4">
+      <h2 class="text-lg font-semibold mb-4">Laporan Transaksi</h2>
+      <form method="GET" action="/laporan" class="mb-4">
+  <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+    <div>
+      <label class="block text-sm font-medium">Tanggal Awal</label>
+      <input type="date" name="start_date" class="form-control" value="<%= start_date || '' %>">
+    </div>
+    <div>
+      <label class="block text-sm font-medium">Tanggal Akhir</label>
+      <input type="date" name="end_date" class="form-control" value="<%= end_date || '' %>">
+    </div>
+    <div>
+      <label class="block text-sm font-medium">Gudang</label>
+      <select name="gudang_id" class="form-control">
+        <option value="">-- Semua Gudang --</option>
+        <% gudangs.forEach(g => { %>
+          <option value="<%= g.id %>" <%= gudang_id == g.id ? 'selected' : '' %>><%= g.nama_gudang %></option>
+        <% }) %>
+      </select>
+    </div>
+    <div>
+      <label class="block text-sm font-medium">Tipe</label>
+      <select name="tipe" class="form-control">
+        <option value="">-- Semua Tipe --</option>
+        <option value="in" <%= tipe === 'in' ? 'selected' : '' %>>Barang Masuk</option>
+        <option value="out" <%= tipe === 'out' ? 'selected' : '' %>>Barang Keluar</option>
+      </select>
+    </div>
+  </div>
+  <div class="mt-3">
+    <button class="btn btn-primary" type="submit">
+      <i class="fas fa-search"></i> Filter
+    </button>
+    <a href="/laporan" class="btn btn-secondary">Reset</a>
+  </div>
+</form>
+
+
+      <table class="table table-bordered text-sm w-full">
+        <thead class="bg-gray-100 text-gray-700">
+          <tr>
+            <th>#</th>
+            <th>Nomor</th>
+            <th>Tanggal</th>
+            <th>Tipe</th>
+            <th>Gudang</th>
+            <th>Referensi</th>
+            <th>Dibuat Oleh</th>
+            <th>Invoice</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (laporan.length === 0) { %>
+          <tr>
+            <td colspan="8" class="text-center text-gray-500 py-4">
+              Tidak ada transaksi.
+            </td>
+          </tr>
+          <% } else { %> <% laporan.forEach((trx, i) => { %>
+          <tr>
+            <td><%= i + 1 %></td>
+            <td><%= trx.nomor %></td>
+            <td><%= trx.tanggal %></td>
+            <td>
+              <span
+                class="<%= trx.tipe === 'in' ? 'text-green-600' : 'text-red-500' %> font-semibold"
+              >
+                <%= trx.tipe === 'in' ? 'Barang Masuk' : 'Barang Keluar' %>
+              </span>
+            </td>
+            <td><%= trx.nama_gudang %></td>
+            <td><%= trx.referensi || '-' %></td>
+            <td><%= trx.nama_user || '-' %></td>
+            <a href="/transaksi/<%= trx.id %>/invoice" class="btn btn-sm btn-primary" target="_blank">
+  <i class="fas fa-file-invoice"></i> Invoice
+</a>
+
+          </tr>
+          <% }) %> <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

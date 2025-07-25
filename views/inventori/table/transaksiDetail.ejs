@@ -1,0 +1,51 @@
+<section class="content">
+  <div class="container-fluid">
+    <!-- Header Section -->
+    <div class="flex justify-between items-center px-6 py-4 bg-white rounded shadow-sm mb-4">
+      <h1 class="text-lg font-semibold">Detail Transaksi - <%= transaksi.nomor %></h1>
+      <a href="/transaksi" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 text-sm rounded">
+        Kembali ke Daftar Transaksi
+      </a>
+    </div>
+
+    <!-- Table Section -->
+    <div class="bg-white p-4 rounded shadow-sm">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left border-separate border-spacing-y-2">
+          <thead class="bg-gray-50 text-gray-600 text-xs font-semibold">
+            <tr>
+              <th class="px-4 py-2">Produk</th>
+              <th class="px-4 py-2">Qty</th>
+              <th class="px-4 py-2">Harga</th>
+              <th class="px-4 py-2">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (transaksi_detail.length === 0) { %>
+              <tr>
+                <td colspan="4" class="text-center py-6 text-gray-400">Tidak ada detail transaksi.</td>
+              </tr>
+            <% } else { %>
+              <% transaksi_detail.forEach(detail => { %>
+                <tr class="bg-white border rounded shadow-sm">
+                  <td class="px-4 py-2"><%= detail.nama_produk %></td>
+                  <td class="px-4 py-2"><%= detail.qty %></td>
+                  <td class="px-4 py-2">Rp <%= detail.harga.toFixed(2) %></td>
+                  <td class="px-4 py-2">Rp <%= detail.total.toFixed(2) %></td>
+                </tr>
+              <% }) %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Total Section -->
+    <div class="bg-white p-4 rounded shadow-sm mt-4">
+      <div class="flex justify-between items-center">
+        <h3 class="text-lg font-semibold">Total Invoice</h3>
+        <p class="text-xl font-bold">Rp <%= transaksi_detail.reduce((sum, detail) => sum + detail.total, 0).toFixed(2) %></p>
+      </div>
+    </div>
+  </div>
+</section>

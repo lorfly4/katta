@@ -1168,96 +1168,412 @@ router.get("/biaya", isAuthenticated, (req, res) => {
   res.render("biaya", { title: "Biaya", user: req.session.user });
 });
 
-//inventory routes
-router.get("/produk", isAuthenticated, async (req, res) => {
-  const [produk] = await db.execute("SELECT * FROM produk ORDER BY id DESC");
-  res.render("inventori/table/produk", {
-    title: "produk",
-    user: req.session.user,
-    produk: produk,
-  });
+router.get('/produk', isAuthenticated, async (req, res) => {
+  const [produk] = await db.execute(`
+    SELECT produk.*, kategori.nama_kategori, gudang.nama_gudang 
+    FROM produk 
+    LEFT JOIN kategori ON produk.id_kategori = kategori.id 
+    LEFT JOIN gudang ON produk.id_gudang = gudang.id
+  `);
+  res.render('inventori/table/produk', { produk, title: "Produk", user: req.session.user });
 });
-router.get("/produk/create", isAuthenticated, async (req, res) => {
-  const [kategori] = await db.execute(
-    "SELECT * FROM kategori_produk ORDER BY id DESC"
+
+// Form tambah
+router.get('/produk/create', isAuthenticated, async (req, res) => {
+  const [kategori] = await db.execute('SELECT * FROM kategori');
+  const [gudang] = await db.execute('SELECT * FROM gudang');
+  res.render('inventori/backend/createproduk', { kategori, gudang, title: "Tambah Produk", user: req.session.user });
+});
+
+// Simpan produk baru
+router.post('/produk/create', isAuthenticated, upload.single('gambar'), async (req, res) => {
+  const {
+    id_kategori,
+    id_gudang,
+    nama_produk,
+    harga_beli,
+    harga_jual,
+    satuan,
+    kode_sku,
+    serial_number,
+    deskripsi
+  } = req.body;
+
+  // Ambil nama file gambar hasil upload
+  const gambar = req.file ? req.file.filename : null;
+
+  await db.execute(
+    `INSERT INTO produk 
+      (id_kategori, id_gudang, nama_produk, gambar, harga_beli, harga_jual, satuan, kode_sku, serial_number, deskripsi)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [id_kategori, id_gudang, nama_produk, gambar, harga_beli, harga_jual, satuan, kode_sku, serial_number, deskripsi]
   );
-  res.render("inventori/backend/createproduk", {
-    title: "Tambah Produk",
-    user: req.session.user,
-    kategori: kategori,
-  });
-});
-router.get("/inventori", isAuthenticated, (req, res) => {
-  res.render("inventori/table/inventori", {
-    title: "inventori",
-    user: req.session.user,
-  });
+  res.redirect('/produk');
 });
 
-router.post(
-  "/produk/create",
-  isAuthenticated,
-  upload.single("gambar"),
-  async (req, res) => {
-    let {
-      nama_produk,
-      kategori,
-      harga_jual,
-      harga_beli,
-      deskripsi,
-      kode_sku,
-      satuan,
-    } = req.body;
-    const gambar = req.file ? req.file.filename : null;
+// Update
+router.post('/produk/update/:id', isAuthenticated, upload.single('gambar'), async (req, res) => {
+  const {
+    id_kategori,
+    id_gudang,
+    nama_produk,
+    harga_beli,
+    harga_jual,
+    satuan,
+    kode_sku,
+    serial_number,
+    deskripsi
+  } = req.body;
 
-    // Ganti undefined menjadi null jika ada
-    nama_produk = nama_produk || null;
-    kategori = kategori || null;
-    harga_jual = harga_jual || null;
-    harga_beli = harga_beli || null;
-    deskripsi = deskripsi || null;
-    kode_sku = kode_sku || null;
-    satuan = satuan || null;
+  const gambar = req.file ? req.file.filename : null;
 
-    try {
-      await db.execute(
-        "INSERT INTO produk (nama_produk, id_kategori, gambar, harga_jual, harga_beli, deskripsi, kode_sku, satuan) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-        [
-          nama_produk,
-          kategori,
-          gambar,
-          harga_jual,
-          harga_beli,
-          deskripsi,
-          kode_sku,
-          satuan,
-        ]
-      );
-      res.redirect("/produk");
-    } catch (err) {
-      console.error("❌ Error simpan produk:", err);
-      res.status(500).send("Gagal menyimpan produk. Cek log server.");
-    }
-  }
-);
+  const query = gambar
+    ? `UPDATE produk SET id_kategori=?, id_gudang=?, nama_produk=?, gambar=?, harga_beli=?, harga_jual=?, satuan=?, kode_sku=?, serial_number=?, deskripsi=? WHERE id=?`
+    : `UPDATE produk SET id_kategori=?, id_gudang=?, nama_produk=?, harga_beli=?, harga_jual=?, satuan=?, kode_sku=?, serial_number=?, deskripsi=? WHERE id=?`;
 
-router.post("/kategori/create", isAuthenticated, async (req, res) => {
+  const params = gambar
+    ? [id_kategori, id_gudang, nama_produk, gambar, harga_beli, harga_jual, satuan, kode_sku, serial_number, deskripsi, req.params.id]
+    : [id_kategori, id_gudang, nama_produk, harga_beli, harga_jual, satuan, kode_sku, serial_number, deskripsi, req.params.id];
+
+  await db.execute(query, params);
+  res.redirect('/produk');
+});
+
+// Hapus
+router.get('/produk/delete/:id', isAuthenticated, async (req, res) => {
+  await db.execute('DELETE FROM produk WHERE id = ?', [req.params.id]);
+  res.redirect('/produk');
+});
+
+// Tambah kategori dari modal AJAX
+router.post('/kategori/create', isAuthenticated, async (req, res) => {
   const { nama_kategori } = req.body;
-  if (!nama_kategori)
-    return res.status(400).json({ error: "Nama kategori wajib diisi" });
-
-  // Simpan ke tabel kategori_produk
-  const [result] = await db.execute(
-    "INSERT INTO kategori_produk (nama_kategori) VALUES (?)",
-    [nama_kategori]
-  );
-  // Kirim id kategori baru ke frontend
+  const [result] = await db.execute('INSERT INTO kategori (nama_kategori) VALUES (?)', [nama_kategori]);
   res.json({ id: result.insertId, nama_kategori });
 });
 
-router.get("/laporan", isAuthenticated, (req, res) => {
-  res.render("laporan", { title: "laporan", user: req.session.user });
+router.get('/gudang', isAuthenticated, async (req, res) => {
+  const [gudangs] = await db.execute('SELECT * FROM gudang ORDER BY id DESC');
+  res.render('inventori/table/inventori', { title: 'Inventori', user: req.session.user, gudangs });
 });
+
+router.get('/gudang/create', isAuthenticated, async (req, res) => {
+  const [gudangs] = await db.execute('SELECT * FROM gudang ORDER BY id DESC');
+  res.render('inventori/backend/creategudang', { title: 'Inventori', user: req.session.user, gudangs });
+});
+
+// POST: Tambah gudang
+router.post('/gudang/create', isAuthenticated, async (req, res) => {
+  const { nama_gudang, lokasi, kode } = req.body;
+  await db.execute('INSERT INTO gudang (nama_gudang, lokasi, kode) VALUES (?, ?, ?)', [nama_gudang, lokasi, kode]);
+  res.redirect('/gudang');
+});
+
+// POST: Update gudang
+router.post('/gudang/update/:id', isAuthenticated, async (req, res) => {
+  const { id } = req.params;
+  const { nama_gudang, lokasi, kode } = req.body;
+  await db.execute('UPDATE gudang SET nama_gudang = ?, lokasi = ?, kode = ? WHERE id = ?', [nama_gudang, lokasi, kode, id]);
+  res.redirect('/gudang');
+});
+
+// GET: Hapus gudang
+router.get('/gudang/delete/:id', isAuthenticated, async (req, res) => {
+  const { id } = req.params;
+  await db.execute('DELETE FROM gudang WHERE id = ?', [id]);
+  res.redirect('/gudang');
+});
+
+// GET: Semua transaksi
+router.get('/transaksi', isAuthenticated, async (req, res) => {
+  const [rows] = await db.execute(`
+    SELECT t.*, g.nama_gudang, COUNT(td.id) AS total_produk
+    FROM transaksi t
+    JOIN gudang g ON t.gudang_id = g.id
+    LEFT JOIN transaksi_detail td ON td.transaksi_id = t.id
+    GROUP BY t.id
+    ORDER BY t.tanggal DESC
+  `);
+
+  res.render('inventori/table/transaksi', {
+    title: 'Transaksi Stok',
+    transaksi: rows,
+    user: req.session.user
+  });
+});
+
+// GET: Form tambah transaksi
+router.get('/transaksi/create', isAuthenticated, async (req, res) => {
+  const [produk] = await db.execute('SELECT * FROM produk');
+  const [gudang] = await db.execute('SELECT * FROM gudang');
+
+  res.render('inventori/backend/createTransaksi', {
+    title: 'Tambah Transaksi',
+    produk,
+    gudang,
+    user: req.session.user
+  });
+});
+
+
+
+router.post('/transaksi/create', isAuthenticated, async (req, res) => {
+  let {
+    nomor,
+    tipe,
+    gudang_id,
+    tanggal,
+    referensi,
+    produk_id, // Array input produk
+    qty,       // Array input qty
+    harga      // Array input harga
+  } = req.body;
+
+  // Pastikan produk_id, qty, dan harga adalah array, bahkan jika hanya ada satu elemen
+  if (!Array.isArray(produk_id)) {
+    produk_id = produk_id ? [produk_id] : [];
+  }
+  if (!Array.isArray(qty)) {
+    qty = qty ? [qty] : [];
+  }
+  if (!Array.isArray(harga)) {
+    harga = harga ? [harga] : [];
+  }
+
+  // Log untuk memeriksa data yang diterima
+  console.log('Produk ID:', produk_id);
+  console.log('Qty:', qty);
+  console.log('Harga:', harga);
+
+  // Validasi input utama
+  if (!nomor || !tipe || !gudang_id || !tanggal) {
+    return res.status(400).send('Data utama tidak boleh kosong.');
+  }
+
+  // Menyimpan transaksi utama ke database
+  const [result] = await db.execute(`
+    INSERT INTO transaksi (nomor, tipe, gudang_id, tanggal, referensi, created_by)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `, [nomor, tipe, gudang_id, tanggal, referensi || null, req.session.user.id]);
+
+  const transaksi_id = result.insertId;
+
+  // Menyimpan detail produk ke database
+  for (let i = 0; i < produk_id.length; i++) {
+    // Validasi jika ada data yang kosong
+    if (!produk_id[i] || !qty[i] || !harga[i]) {
+      continue; // Lewati jika data tidak lengkap
+    }
+
+    // Parsing qty dan harga ke tipe data yang sesuai
+    const parsedQty = parseInt(qty[i], 10);
+    const parsedHarga = parseFloat(harga[i]);
+
+    // Skip jika data qty atau harga tidak valid
+    if (isNaN(parsedQty) || isNaN(parsedHarga)) {
+      continue; // Lewati data yang tidak valid
+    }
+
+    // Menyimpan detail transaksi ke database
+    await db.execute(`
+      INSERT INTO transaksi_detail (transaksi_id, produk_id, qty, harga)
+      VALUES (?, ?, ?, ?)
+    `, [transaksi_id, produk_id[i], parsedQty, parsedHarga]);
+  }
+
+  res.redirect('/transaksi');
+});
+
+
+
+// GET: Form edit transaksi
+router.get('/transaksi/edit/:id', isAuthenticated, async (req, res) => {
+  const transaksi_id = req.params.id;
+
+  const [[transaksi]] = await db.execute('SELECT * FROM transaksi WHERE id = ?', [transaksi_id]);
+  const [detail] = await db.execute('SELECT * FROM transaksi_detail WHERE transaksi_id = ?', [transaksi_id]);
+  const [produk] = await db.execute('SELECT * FROM produk');
+  const [gudang] = await db.execute('SELECT * FROM gudang');
+
+  res.render('inventori/backend/editTransaksi', {
+    title: 'Edit Transaksi',
+    transaksi,
+    detail,
+    produk,
+    gudang,
+    user: req.session.user
+  });
+});
+
+// POST: Update transaksi
+router.post('/transaksi/edit/:id', isAuthenticated, async (req, res) => {
+  const transaksi_id = req.params.id;
+  const { nomor, tipe, gudang_id, tanggal, referensi, produk_id, qty, harga } = req.body;
+
+  await db.execute(`
+    UPDATE transaksi SET nomor = ?, tipe = ?, gudang_id = ?, tanggal = ?, referensi = ?
+    WHERE id = ?
+  `, [nomor, tipe, gudang_id, tanggal, referensi, transaksi_id]);
+
+  await db.execute('DELETE FROM transaksi_detail WHERE transaksi_id = ?', [transaksi_id]);
+
+  for (let i = 0; i < produk_id.length; i++) {
+    await db.execute(`
+      INSERT INTO transaksi_detail (transaksi_id, produk_id, qty, harga)
+      VALUES (?, ?, ?, ?)
+    `, [transaksi_id, produk_id[i], qty[i], harga[i]]);
+  }
+
+  res.redirect('/transaksi');
+});
+
+// GET: Hapus transaksi
+router.get('/transaksi/delete/:id', isAuthenticated, async (req, res) => {
+  const transaksi_id = req.params.id;
+
+  await db.execute('DELETE FROM transaksi WHERE id = ?', [transaksi_id]);
+
+  res.redirect('/transaksi');
+});
+
+// GET: Detail transaksi
+router.get('/transaksi/:id', isAuthenticated, async (req, res) => {
+  const transaksi_id = req.params.id;
+
+  // Ambil data transaksi utama
+  const [transaksi] = await db.execute(`
+    SELECT t.*, g.nama_gudang
+    FROM transaksi t
+    JOIN gudang g ON t.gudang_id = g.id
+    WHERE t.id = ?
+  `, [transaksi_id]);
+
+  if (!transaksi) {
+    return res.status(404).send('Transaksi tidak ditemukan');
+  }
+
+  // Ambil detail transaksi dan pastikan harga dan total adalah angka
+  const [transaksi_detail] = await db.execute(`
+    SELECT td.qty, td.harga, (td.qty * td.harga) AS total, p.nama_produk
+    FROM transaksi_detail td
+    JOIN produk p ON td.produk_id = p.id
+    WHERE td.transaksi_id = ?
+  `, [transaksi_id]);
+
+  // Pastikan detail.harga dan detail.total adalah angka
+  transaksi_detail.forEach(detail => {
+    detail.harga = parseFloat(detail.harga); // Konversi harga menjadi angka
+    detail.total = parseFloat(detail.total); // Konversi total menjadi angka
+  });
+
+  // Kirim data transaksi dan detail transaksi ke tampilan
+  res.render('inventori/table/transaksiDetail', {
+    title: `Detail Transaksi - ${transaksi.nomor}`,
+    transaksi: transaksi,
+    transaksi_detail: transaksi_detail,
+    user: req.session.user
+  });
+});
+
+
+
+
+router.get('/laporan', isAuthenticated, async (req, res) => {
+  const { start_date, end_date, gudang_id, tipe } = req.query;
+
+  const filter = [];
+  const values = [];
+
+  if (start_date && end_date) {
+    filter.push('t.tanggal BETWEEN ? AND ?');
+    values.push(start_date, end_date);
+  }
+
+  if (gudang_id) {
+    filter.push('t.gudang_id = ?');
+    values.push(gudang_id);
+  }
+
+  if (tipe) {
+    filter.push('t.tipe = ?');
+    values.push(tipe);
+  }
+
+  const where = filter.length ? 'WHERE ' + filter.join(' AND ') : '';
+
+  const [laporan] = await db.execute(`
+  SELECT t.id, t.nomor, t.tanggal, t.tipe, t.referensi, g.nama_gudang, p.nama_produk, d.qty, d.harga, u.name AS nama_user
+  FROM transaksi t
+  JOIN gudang g ON t.gudang_id = g.id
+  JOIN transaksi_detail d ON t.id = d.transaksi_id
+  JOIN produk p ON d.produk_id = p.id
+  LEFT JOIN users u ON t.created_by = u.id
+  ${where}
+  ORDER BY t.tanggal DESC
+`, values);
+
+
+  const [gudangs] = await db.execute('SELECT * FROM gudang');
+
+  res.render('inventori/table/laporan', {
+    title: "Laporan",
+    user: req.session.user,
+    laporan,
+    gudangs,
+    start_date,
+    end_date,
+    gudang_id,
+    tipe
+  });
+});
+
+// Rute untuk menampilkan faktur (invoice)
+router.get('/transaksi/:id/invoice', isAuthenticated, async (req, res) => {
+  const transaksi_id = req.params.id;
+
+  try {
+    // Ambil data transaksi utama
+    const [transaksi] = await db.execute(`
+      SELECT t.*, g.nama_gudang
+      FROM transaksi t
+      JOIN gudang g ON t.gudang_id = g.id
+      WHERE t.id = ?
+    `, [transaksi_id]);
+
+    // Cek apakah transaksi ditemukan
+    if (!transaksi || !transaksi.nomor) {
+      return res.status(404).send('Transaksi tidak ditemukan atau nomor transaksi tidak tersedia');
+    }
+
+    // Ambil detail transaksi
+    const [transaksi_detail] = await db.execute(`
+      SELECT td.qty, td.harga, (td.qty * td.harga) AS total, p.nama_produk
+      FROM transaksi_detail td
+      JOIN produk p ON td.produk_id = p.id
+      WHERE td.transaksi_id = ?
+    `, [transaksi_id]);
+
+    // Pastikan harga dan total adalah angka
+    transaksi_detail.forEach(detail => {
+      detail.harga = parseFloat(detail.harga); // Konversi harga menjadi angka
+      detail.total = parseFloat(detail.total); // Konversi total menjadi angka
+    });
+
+    // Kirim data transaksi dan detail transaksi ke tampilan faktur
+    res.render('inventori/table/invoice', {
+      title: `Faktur - ${transaksi.nomor}`,
+      transaksi: transaksi,
+      transaksi_detail: transaksi_detail,
+      user: req.session.user
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Terjadi kesalahan saat mengambil data transaksi');
+  }
+});
+
+
+
 router.get("/kas-bank", isAuthenticated, (req, res) => {
   res.render("kas-bank", { title: "kas-bank", user: req.session.user });
 });
