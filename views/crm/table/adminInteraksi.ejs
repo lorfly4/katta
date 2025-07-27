@@ -1,0 +1,113 @@
+<div class="container mt-4">
+  <!-- Header -->
+  <div class="row mb-2">
+    <div class="col-sm-6">
+      <h1 class="m-0">Tabel Interaksi</h1>
+    </div>
+    <div class="col-sm-6">
+      <ol class="breadcrumb float-sm-right" style="background-color: #f4f6f9">
+        <li class="breadcrumb-item"><a href="#">Halaman Utama</a></li>
+        <li class="breadcrumb-item active">Tabel Interaksi</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Tombol dan Search -->
+  <div class="d-flex justify-content-between mb-2">
+    <a href="/admin-sales/interactions/tambah" class="btn btn-sm btn-success">Tambah Interaksi</a>
+    <form action="/admin-sales/interactions" method="GET" class="d-flex">
+      <input type="text" name="search" class="form-control form-control-sm" placeholder="Cari interaksi..." value="<%= typeof search !== 'undefined' ? search : '' %>" />
+      <button type="submit" class="btn btn-sm btn-primary ml-2">Cari</button>
+    </form>
+  </div>
+
+  <!-- Tabel -->
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered">
+      <thead class="table-dark">
+        <tr class="text-center align-middle">
+          <th style="width: 3em">No</th>
+          <th>Nama Klien</th>
+          <th>Tipe Interaksi</th>
+          <th>Catatan</th>
+          <th>Dibuat Oleh</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (interactions && interactions.length > 0) { %>
+          <% interactions.forEach(function(interaction, idx) { %>
+            <tr>
+              <td class="text-center"><%= idx + 1 %></td>
+              <td><%= interaction.client_name %></td>
+              <td><%= interaction.type %></td>
+              <td><%= interaction.notes %></td>
+              <td><%= interaction.created_by_name %></td>
+              <td class="text-center">
+                <button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#detailModal" data-user-id="<%= interaction.created_by %>">
+                  Detail
+                </button>
+              </td>
+            </tr>
+          <% }); %>
+        <% } else { %>
+          <tr>
+            <td class="text-center" colspan="6">Tidak ada data</td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="detailModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="detailModalLabel">Detail Interaksi</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <!-- Info user dan klien yang dibuatnya akan dimuat di sini -->
+          <div id="userDetails">
+            <p><strong>Nama User:</strong> <span id="userName"></span></p>
+            <p><strong>Klien yang dibuat:</strong> <ul id="clientList"></ul></p>
+            <hr>
+            <p><strong>Interaksi yang dibuat:</strong></p>
+            <ul id="interactionList"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Ketika modal ditampilkan, load data terkait user yang dipilih
+  $('#detailModal').on('show.bs.modal', async function (event) {
+    const button = $(event.relatedTarget); // Tombol "Detail"
+    const userId = button.data('user-id'); // Ambil user_id dari tombol
+
+    const response = await fetch(`/admin-sales/interactions/detail/${userId}`);
+    const data = await response.json();
+
+    // Tampilkan detail user
+    $('#userName').text(data.user.name);
+
+    // Tampilkan klien yang dibuat oleh user
+    const clientList = $('#clientList');
+    clientList.empty();
+    data.clients.forEach(client => {
+      clientList.append(`<li>${client.name}</li>`);
+    });
+
+    // Tampilkan interaksi yang dibuat oleh user
+    const interactionList = $('#interactionList');
+    interactionList.empty();
+    data.interactions.forEach(interaction => {
+      interactionList.append(`<li>${interaction.type}: ${interaction.notes}</li>`);
+    });
+  });
+</script>

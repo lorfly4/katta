@@ -160,93 +160,118 @@ router.get("/dashboard", isAuthenticated, (req, res) => {
 });
 
 // LIST KLIIEN
+// Route to list clients
 router.get('/clients', isAuthenticated, async (req, res) => {
-  if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales') {
+  if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales' && req.session.user.role !== 'admin-sales') {
     return res.status(403).send('Forbidden');
   }
 
+  const userId = req.session.user.id;
+
+  // Fetch only the clients created by the logged-in user
   const [rows] = await db.execute(`
     SELECT clients.*, users.name AS creator_name
     FROM clients
     LEFT JOIN users ON clients.created_by = users.id
+    WHERE clients.created_by = ?
     ORDER BY clients.id DESC
-  `);
+  `, [userId]);
+
   res.render('crm/table/klien', { title: 'Daftar Klien', user: req.session.user, clients: rows });
 });
 
-// CREATE KLIEN
+// Route to create a new client (client creation form)
 router.get('/crm/backend/createklien', isAuthenticated, async (req, res) => {
-  if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales') {
+  if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales' && req.session.user.role !== 'admin-sales') {
     return res.status(403).send('Forbidden');
   }
 
-  const [rows] = await db.execute('SELECT * FROM clients ORDER BY id DESC');
-  res.render('crm/backend/createklien', { title: 'Daftar Klien', user: req.session.user, clients: rows });
+  // No changes here, just show the client creation page
+  res.render('crm/backend/createklien', { title: 'Tambah Klien', user: req.session.user });
 });
 
-// TAMBAH KLIEN
+// Route to add a new client
 router.post('/clients', isAuthenticated, async (req, res) => {
-  if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales') {
+  if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales' && req.session.user.role !== 'admin-sales') {
     return res.status(403).send('Forbidden');
   }
 
   const { nama_klien: name, perusahaan_klien: company, nomor_telpon_klien: phone, email_klien: email } = req.body;
-  await db.execute('INSERT INTO clients (name, company, phone, email, created_by) VALUES (?, ?, ?, ?, ?)', [name, company, phone, email, req.session.user.id]);
+  const userId = req.session.user.id;
+
+  await db.execute('INSERT INTO clients (name, company, phone, email, created_by) VALUES (?, ?, ?, ?, ?)', [name, company, phone, email, userId]);
   res.redirect('/clients');
 });
 
-
-// EDIT KLIEN
+// Route to edit a client (client edit form)
 router.get('/clients/edit/:id', isAuthenticated, async (req, res) => {
-  if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales') {
+  if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales' && req.session.user.role !== 'admin-sales') {
     return res.status(403).send('Forbidden');
   }
 
-  const [rows] = await db.execute('SELECT * FROM clients WHERE id = ?', [req.params.id]);
-  if (rows.length === 0) return res.status(404).send('Not found');
+  const userId = req.session.user.id;
+  const clientId = req.params.id;
+
+  // Check if the client belongs to the logged-in user
+  const [rows] = await db.execute('SELECT * FROM clients WHERE id = ? AND created_by = ?', [clientId, userId]);
+
+  if (rows.length === 0) {
+    return res.status(404).send('Client not found or you do not have permission to edit this client');
+  }
+
   res.render('crm/backend/editklien', { title: 'Edit Klien', user: req.session.user, client: rows[0] });
 });
 
-// UPDATE KLIEN
+// Route to update client data
 router.post('/clients/edit/:id', isAuthenticated, async (req, res) => {
-  if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales') {
+  if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales' && req.session.user.role !== 'admin-sales') {
     return res.status(403).send('Forbidden');
   }
 
   const { nama_klien, perusahaan_klien, nomor_telpon_klien, email_klien } = req.body;
-  await db.execute('UPDATE clients SET name = ?, company = ?, phone = ?, email = ? WHERE id = ?', [nama_klien, perusahaan_klien, nomor_telpon_klien, email_klien, req.params.id]);
+  const userId = req.session.user.id;
+  const clientId = req.params.id;
+
+  // Update client data if it belongs to the logged-in user
+  await db.execute('UPDATE clients SET name = ?, company = ?, phone = ?, email = ? WHERE id = ? AND created_by = ?', [nama_klien, perusahaan_klien, nomor_telpon_klien, email_klien, clientId, userId]);
   res.redirect('/clients');
 });
 
-// HAPUS KLIEN
+// Route to delete a client
 router.post('/clients/delete/:id', isAuthenticated, async (req, res) => {
   if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales') {
     return res.status(403).send('Forbidden');
   }
-  await db.execute('DELETE FROM clients WHERE id = ?', [req.params.id]);
+
+  const userId = req.session.user.id;
+  const clientId = req.params.id;
+
+  // Check if the client belongs to the logged-in user before deleting
+  await db.execute('DELETE FROM clients WHERE id = ? AND created_by = ?', [clientId, userId]);
   res.redirect('/clients');
 });
 
-
-
-
 // =========================================================================================================
 
-// LIST INTERAKSI
+// Route to list interactions
 router.get('/interactions', isAuthenticated, async (req, res) => {
   if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales') {
     return res.status(403).send('Forbidden');
   }
 
-  const [rows] = await db.execute(`
-  SELECT interactions.*, clients.name AS client_name, users.name AS created_by_name
-  FROM interactions
-  JOIN clients ON interactions.client_id = clients.id
-  JOIN users ON interactions.created_by = users.id
-  ORDER BY interactions.id DESC
-`);
+  const userId = req.session.user.id;
 
-  const [clients] = await db.execute('SELECT id, name FROM clients');
+  // Fetch only the interactions created by the logged-in user
+  const [rows] = await db.execute(`
+    SELECT interactions.*, clients.name AS client_name, users.name AS created_by_name
+    FROM interactions
+    JOIN clients ON interactions.client_id = clients.id
+    JOIN users ON interactions.created_by = users.id
+    WHERE interactions.created_by = ?
+    ORDER BY interactions.id DESC
+  `, [userId]);
+
+  const [clients] = await db.execute('SELECT id, name FROM clients WHERE created_by = ?', [userId]);
 
   res.render('crm/table/interaksi', {
     title: 'Daftar Interaksi',
@@ -256,84 +281,55 @@ router.get('/interactions', isAuthenticated, async (req, res) => {
   });
 });
 
-// TAMBAH INTERAKSI
+// Route to add a new interaction
 router.get('/interactions/tambah', isAuthenticated, async (req, res) => {
   if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales') {
     return res.status(403).send('Forbidden');
   }
 
-  const [clients] = await db.execute('SELECT id, name FROM clients');
-  res.render('crm/backend/createinteraksiklien', { title: 'Daftar Interaksi', user: req.session.user, clients });
+  const userId = req.session.user.id;
+  const [clients] = await db.execute('SELECT id, name FROM clients WHERE created_by = ?', [userId]);
+  res.render('crm/backend/createinteraksiklien', { title: 'Tambah Interaksi', user: req.session.user, clients });
 });
 
-
-// TAMBAH INTERAKSI
+// Route to save a new interaction
 router.post('/interactions', isAuthenticated, upload.single('attachment'), async (req, res) => {
   if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales') {
     return res.status(403).send('Forbidden');
   }
 
   const { client_id, type, notes, send_email, subjek } = req.body;
+  const userId = req.session.user.id;
   const file = req.file;
 
-  // Simpan interaksi ke database
-  const [client] = await db.execute('SELECT email FROM clients WHERE id = ?', [client_id]);
-  const email = client[0]?.email;
-
+  // Insert the new interaction
   await db.execute(`
-  INSERT INTO interactions (user_id, client_id, type, subjek, notes, file_path, send_email, created_by)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-`,
-    [
-      req.session.user.id,
-      client_id,
-      type,
-      subjek,
-      notes,
-      file?.path || null,
-      send_email ? 1 : 0,
-      req.session.user.id
-    ]);
+    INSERT INTO interactions (user_id, client_id, type, subjek, notes, file_path, send_email, created_by)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `, [userId, client_id, type, subjek, notes, file?.path || null, send_email ? 1 : 0, userId]);
 
+  // If email is to be sent, send it
+  if (send_email) {
+    const [client] = await db.execute('SELECT email FROM clients WHERE id = ?', [client_id]);
+    const email = client[0]?.email;
 
-  // Jika opsi kirim email dicentang
+    if (email) {
+      const [emailConfig] = await db.execute('SELECT * FROM konfig_email LIMIT 1');
+      const { type, host, port, username, password } = emailConfig[0];
 
-  if (send_email && email) {
-    try {
-      // Ambil username dan password dari tabel konfig_email
-      const [rows] = await db.execute('SELECT * FROM konfig_email LIMIT 1');
+      const transporter = nodemailer.createTransport({
+        service: type === 'gmail' ? 'gmail' : undefined,
+        host: type === 'smtp' ? host : undefined,
+        port: type === 'smtp' ? port : undefined,
+        auth: {
+          user: username,
+          pass: password
+        }
+      });
 
-      if (!rows.length) {
-        console.error("Konfigurasi email tidak ditemukan");
-        return res.status(500).send('Konfigurasi email tidak ditemukan');
-      }
-
-      const { type, host, port, username, password } = rows[0];
-
-      let transporter;
-      if (type === 'gmail') {
-        transporter = nodemailer.createTransport({
-          service: 'gmail',
-          auth: {
-            user: username,
-            pass: password
-          }
-        });
-      } else if (type === 'smtp') {
-        transporter = nodemailer.createTransport({
-          host,
-          port,
-          auth: {
-            user: username,
-            pass: password
-          }
-        });
-      } else {
-        return res.status(500).send('Tidak support untuk pengiriman email dari provider lain');
-      }
       const mailOptions = {
         from: 'noreply',
-        to: email, // Ganti dengan variabel email yang dikirim
+        to: email,
         subject: subjek,
         text: notes,
         attachments: file ? [{
@@ -343,22 +339,17 @@ router.post('/interactions', isAuthenticated, upload.single('attachment'), async
       };
 
       await transporter.sendMail(mailOptions);
-      console.log('Email dikirim ke:', email);
-
-    } catch (err) {
-      console.error('Gagal kirim email:', err);
     }
   }
 
   res.redirect('/interactions');
-
 });
 
 // KONFIGURASI EMAIL 
 
 
 router.get('/email', isAuthenticated, async (req, res) => {
-  if (req.session.user.role !== 'admin') {
+  if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales') {
     return res.status(403).send('Forbidden');
   }
 
@@ -413,6 +404,301 @@ router.post('/prosesemail', isAuthenticated, async (req, res) => {
 
 
 // =========================================================================================================
+// Admin-Sales: Daftar 
+
+// Route to list all clients for admin-sales
+router.get('/admin-sales/clients', isAuthenticated, async (req, res) => {
+  if (req.session.user.role !== 'admin' && req.session.user.role !== 'admin-sales') {
+    return res.status(403).send('Forbidden');
+  }
+
+  // Fetch all clients without any filtering and without joining the users table
+  const [rows] = await db.execute(`
+    SELECT * FROM clients
+    ORDER BY id DESC
+  `);
+
+  res.render('crm/table/klien', { title: 'Daftar Klien', user: req.session.user, clients: rows });
+});
+
+// Route to add a new client
+router.post('/admin-sales/clients', isAuthenticated, async (req, res) => {
+  if (req.session.user.role !== 'admin' && req.session.user.role !== 'admin-sales') {
+    return res.status(403).send('Forbidden');
+  }
+
+  const { nama_klien: name, perusahaan_klien: company, nomor_telpon_klien: phone, email_klien: email } = req.body;
+
+  await db.execute('INSERT INTO clients (name, company, phone, email) VALUES (?, ?, ?, ?)', [name, company, phone, email]);
+  res.redirect('/admin-sales/clients');
+});
+
+// Route to edit a client (client edit form)
+router.get('/admin-sales/clients/edit/:id', isAuthenticated, async (req, res) => {
+  if (req.session.user.role !== 'admin' && req.session.user.role !== 'admin-sales') {
+    return res.status(403).send('Forbidden');
+  }
+
+  const clientId = req.params.id;
+
+  const [rows] = await db.execute('SELECT * FROM clients WHERE id = ?', [clientId]);
+
+  if (rows.length === 0) {
+    return res.status(404).send('Client not found');
+  }
+
+  res.render('crm/backend/editklien', { title: 'Edit Klien', user: req.session.user, client: rows[0] });
+});
+
+// Route to update client data
+router.post('/admin-sales/clients/edit/:id', isAuthenticated, async (req, res) => {
+  if (req.session.user.role !== 'admin' && req.session.user.role !== 'admin-sales') {
+    return res.status(403).send('Forbidden');
+  }
+
+  const { nama_klien, perusahaan_klien, nomor_telpon_klien, email_klien } = req.body;
+  const clientId = req.params.id;
+
+  await db.execute('UPDATE clients SET name = ?, company = ?, phone = ?, email = ? WHERE id = ?', [nama_klien, perusahaan_klien, nomor_telpon_klien, email_klien, clientId]);
+  res.redirect('/admin-sales/clients');
+});
+
+// Route to delete a client
+router.post('/admin-sales/clients/delete/:id', isAuthenticated, async (req, res) => {
+  if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales') {
+    return res.status(403).send('Forbidden');
+  }
+
+  const clientId = req.params.id;
+
+  await db.execute('DELETE FROM clients WHERE id = ?', [clientId]);
+  res.redirect('/admin-sales/clients');
+});
+
+
+router.get('/admin-sales/interactions', isAuthenticated, async (req, res) => {
+  if (req.session.user.role !== 'admin' && req.session.user.role !== 'admin-sales') {
+    return res.status(403).send('Forbidden');
+  }
+
+  const [rows] = await db.execute(`
+    SELECT interactions.*, clients.name AS client_name, users.name AS created_by_name
+    FROM interactions
+    JOIN clients ON interactions.client_id = clients.id
+    JOIN users ON interactions.created_by = users.id
+    ORDER BY interactions.id DESC
+  `);
+
+  const [clients] = await db.execute('SELECT id, name FROM clients');
+  const [salesUsers] = await db.execute('SELECT id, name FROM users WHERE role = "sales"');
+
+  res.render('crm/table/interaksi', {
+    title: 'Daftar Interaksi',
+    user: req.session.user,
+    interactions: rows,
+    clients,
+    salesUsers
+  });
+});
+
+router.get('/admin-sales/interactions/detail/:userId', isAuthenticated, async (req, res) => {
+  if (req.session.user.role !== 'admin' && req.session.user.role !== 'admin-sales') {
+    return res.status(403).send('Forbidden');
+  }
+
+  const userId = req.params.userId;
+
+  // Ambil data user
+  const [user] = await db.execute('SELECT id, name FROM users WHERE id = ?', [userId]);
+
+  if (user.length === 0) {
+    return res.status(404).send('User not found');
+  }
+
+  // Ambil klien yang dibuat oleh user
+  const [clients] = await db.execute('SELECT id, name FROM clients WHERE created_by = ?', [userId]);
+
+  // Ambil interaksi yang dibuat oleh user
+  const [interactions] = await db.execute('SELECT type, notes FROM interactions WHERE created_by = ?', [userId]);
+
+  res.json({
+    user: user[0],
+    clients,
+    interactions
+  });
+});
+
+
+router.get('/admin-sales/interactions/detail/:interactionId', isAuthenticated, async (req, res) => {
+  if (req.session.user.role !== 'admin' && req.session.user.role !== 'admin-sales') {
+    return res.status(403).send('Forbidden');
+  }
+
+  const interactionId = req.params.interactionId;
+
+  // Ambil data interaksi berdasarkan ID
+  const [interaction] = await db.execute(`
+    SELECT interactions.*, clients.name AS client_name, users.name AS created_by_name
+    FROM interactions
+    JOIN clients ON interactions.client_id = clients.id
+    JOIN users ON interactions.created_by = users.id
+    WHERE interactions.id = ?
+  `, [interactionId]);
+
+  if (interaction.length === 0) {
+    return res.status(404).send('Interaksi tidak ditemukan');
+  }
+
+  res.json(interaction[0]);
+});
+
+
+
+// Admin-Sales: Tambah Interaksi
+router.get('/admin-sales/interactions/tambah', isAuthenticated, async (req, res) => {
+  if (req.session.user.role !== 'admin' && req.session.user.role !== 'admin-sales') {
+    return res.status(403).send('Forbidden');
+  }
+
+  const [clients] = await db.execute('SELECT id, name FROM clients');
+  res.render('crm/backend/createinteraksiklien', { title: 'Daftar Interaksi', user: req.session.user, clients });
+});
+
+// Admin-Sales: Proses Tambah Interaksi
+router.post('/admin-sales/interactions', isAuthenticated, upload.single('attachment'), async (req, res) => {
+  if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales') {
+    return res.status(403).send('Forbidden');
+  }
+
+  const { client_id, type, notes, send_email, subjek } = req.body;
+  const file = req.file;
+
+  // Simpan interaksi ke database
+  const [client] = await db.execute('SELECT email FROM clients WHERE id = ?', [client_id]);
+  const email = client[0]?.email;
+
+  await db.execute(`
+  INSERT INTO interactions (user_id, client_id, type, subjek, notes, file_path, send_email, created_by)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+`,
+    [
+      req.session.user.id,
+      client_id,
+      type,
+      subjek,
+      notes,
+      file?.path || null,
+      send_email ? 1 : 0,
+      req.session.user.id
+    ]);
+
+  // Jika opsi kirim email dicentang
+  if (send_email && email) {
+    try {
+      // Ambil username dan password dari tabel konfig_email
+      const [rows] = await db.execute('SELECT * FROM konfig_email LIMIT 1');
+
+      if (!rows.length) {
+        console.error("Konfigurasi email tidak ditemukan");
+        return res.status(500).send('Konfigurasi email tidak ditemukan');
+      }
+
+      const { type, host, port, username, password } = rows[0];
+
+      let transporter;
+      if (type === 'gmail') {
+        transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: username,
+            pass: password
+          }
+        });
+      } else if (type === 'smtp') {
+        transporter = nodemailer.createTransport({
+          host,
+          port,
+          auth: {
+            user: username,
+            pass: password
+          }
+        });
+      } else {
+        return res.status(500).send('Tidak support untuk pengiriman email dari provider lain');
+      }
+
+      const mailOptions = {
+        from: 'noreply',
+        to: email, // Ganti dengan variabel email yang dikirim
+        subject: subjek,
+        text: notes,
+        attachments: file ? [{
+          filename: file.originalname,
+          path: file.path
+        }] : []
+      };
+
+      await transporter.sendMail(mailOptions);
+      console.log('Email dikirim ke:', email);
+
+    } catch (err) {
+      console.error('Gagal kirim email:', err);
+    }
+  }
+
+  res.redirect('/admin-sales/interactions');
+});
+
+// Admin-Sales: Konfigurasi Email
+router.get('/admin-sales/email', isAuthenticated, async (req, res) => {
+  if (req.session.user.role !== 'admin-sales') {
+    return res.status(403).send('Forbidden');
+  }
+
+  const [emailConfig] = await db.execute('SELECT * FROM konfig_email WHERE id_user = ?', [req.session.user.id]);
+  const [users] = await db.execute('SELECT id, name FROM users');
+
+  res.render('crm/backend/createconfigemail', {
+    title: 'Email',
+    user: req.session.user,
+    emailConfig: emailConfig[0] || {},
+    users
+  });
+});
+
+// Admin-Sales: Proses Konfigurasi Email
+router.post('/admin-sales/prosesemail', isAuthenticated, async (req, res) => {
+  const {
+    email_host,
+    email_port,
+    email_username_smtp,
+    email_password_smtp,
+    email_username_gmail,
+    email_password_gmail
+  } = req.body;
+
+  // Handle SMTP (jika username dan password SMTP diisi)
+  if (email_username_smtp && email_password_smtp) {
+    await db.execute(
+      `INSERT INTO konfig_email (type, host, port, username, password, id_user)
+     VALUES (?, ?, ?, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE host = VALUES(host), port = VALUES(port), username = VALUES(username), password = VALUES(password), id_user = VALUES(id_user)`,
+      ['smtp', email_host, email_port, email_username_smtp, email_password_smtp, req.session.user.id]
+    );
+  }
+
+  // Handle Gmail (jika username dan password Gmail diisi)
+  if (email_username_gmail && email_password_gmail) {
+    await db.execute(
+      `INSERT INTO konfig_email (type, host, port, username, password, id_user)
+     VALUES (?, NULL, NULL, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE username = VALUES(username), password = VALUES(password), id_user = VALUES(id_user)`,
+      ['gmail', email_username_gmail, email_password_gmail, req.session.user.id]
+    );
+  }
+
+  res.redirect('/admin-sales/email');
+});
 
 
 // LIST PENJUALAN

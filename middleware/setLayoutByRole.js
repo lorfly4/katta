@@ -18,6 +18,9 @@ module.exports = (req, res, next) => {
     case 'inventory':
       res.locals.layout = 'layouts/layout-inventori';
       break;
+    case 'admin-sales':
+      res.locals.layout = 'layouts/layout-adminsales';
+      break;
     default:
       res.locals.layout = 'layouts/template';
   }
