@@ -1,0 +1,48 @@
+<div class="container mt-4">
+  <!-- Header -->
+  <div class="row mb-2">
+    <div class="col-sm-6">
+      <h1 class="m-0">Detail Interaksi - <%= user.name %></h1>
+    </div>
+    <div class="col-sm-6">
+      <ol class="breadcrumb float-sm-right" style="background-color: #f4f6f9">
+        <li class="breadcrumb-item"><a href="#">Halaman Utama</a></li>
+        <li class="breadcrumb-item">
+          <a href="/admin-sales/interactions">Tabel PIC Sales</a>
+        </li>
+        <li class="breadcrumb-item active">Detail Interaksi</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Tabel Interaksi -->
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered">
+      <thead class="table-dark">
+        <tr class="text-center align-middle">
+          <th style="width: 3em">No</th>
+          <th>Nama Klien</th>
+          <th>Perusahaan</th>
+          <th>Email</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (clients && clients.length > 0) { %> <%
+        clients.forEach(function(client, idx) { %>
+        <tr>
+          <td class="text-center"><%= idx + 1 %></td>
+          <td class="text-center"><%= client.client_name %></td>
+          <td class="text-center"><%= client.company %></td>
+          <td class="text-center"><%= client.email %></td>
+        </tr>
+        <% }); %> <% } else { %>
+        <tr>
+          <td class="text-center" colspan="4">
+            Tidak ada interaksi yang ditemukan
+          </td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -17,16 +17,24 @@
     <a href="/interactions/tambah" class="btn btn-sm btn-success"
       >Tambah Interaksi</a
     >
-    <form action="/interactions" method="GET" class="d-flex">
-      <input
-        type="text"
-        name="search"
-        class="form-control form-control-sm"
-        placeholder="Cari interaksi..."
-        value="<%= typeof search !== 'undefined' ? search : '' %>"
-      />
-      <button type="submit" class="btn btn-sm btn-primary ml-2">Cari</button>
-    </form>
+    <form action="/interactions" method="GET" class="d-flex justify-content-between mb-2">
+  <input type="text" name="search" class="form-control form-control-sm" placeholder="Cari interaksi..." value="<%= search || '' %>">
+  
+  <!-- Pilihan Kolom untuk Pengurutan -->
+  <select name="sortBy" class="form-control form-control-sm">
+    <option value="created_at" <%= sortBy === 'created_at' ? 'selected' : '' %>>Tanggal Dibuat</option>
+    <option value="client_name" <%= sortBy === 'client_name' ? 'selected' : '' %>>Nama Klien</option>
+    <option value="type" <%= sortBy === 'type' ? 'selected' : '' %>>Tipe Interaksi</option>
+  </select>
+  
+  <!-- Pilihan Urutan (Ascending / Descending) -->
+  <select name="order" class="form-control form-control-sm">
+    <option value="asc" <%= order === 'asc' ? 'selected' : '' %>>Ascending</option>
+    <option value="desc" <%= order === 'desc' ? 'selected' : '' %>>Descending</option>
+  </select>
+  
+  <button type="submit" class="btn btn-sm btn-primary ml-2">Cari</button>
+</form>
   </div>
 
   <!-- Flash message -->

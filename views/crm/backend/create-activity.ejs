@@ -1,0 +1,134 @@
+<div class="container mt-4">
+  <div class="row mb-2">
+    <div class="col-sm-6">
+      <h1 class="m-0">Tambah Aktivitas</h1>
+    </div>
+    <div class="col-sm-6">
+      <ol class="breadcrumb float-sm-right" style="background-color: #f4f6f9">
+        <li class="breadcrumb-item"><a href="#">Home</a></li>
+        <li class="breadcrumb-item active">Tambah Aktivitas</li>
+      </ol>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">Input Data Aktivitas</div>
+        <div class="card-body">
+          <!-- Form untuk tambah aktivitas -->
+          <form action="/create-activity/add" method="POST">
+            <div class="form-group">
+              <select
+                id="namaPerusahaan"
+                name="name_perusahaan"
+                class="form-control"
+              >
+                <option value="">Pilih Perusahaan</option>
+                <% clients.forEach(client => { %>
+                <option value="<%= client.company %>">
+                  <%= client.company %>
+                </option>
+                <% }); %>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="jenis_perusahaan">Jenis Perusahaan</label>
+              <select
+                name="jenis_perusahaan"
+                class="form-control"
+                placeholder="Pilih Jenis Perusahaan"
+              >
+                <option value="Retail">Retail</option>
+                <option value="Food and Beverage">Food and Beverage</option>
+                <option value="Banking">Banking</option>
+                <!-- Tambahkan opsi lainnya jika diperlukan -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="source_of_business">Source of Business</label>
+              <input
+                type="text"
+                name="source_of_business"
+                required
+                class="form-control"
+                placeholder="Masukkan Source of Business"
+              />
+            </div>
+
+            <div class="form-group" style="display: none">
+              <label for="pic_name">Nama PIC</label>
+              <input
+                type="text"
+                name="pic_name"
+                value="<%= user.name %>"
+                required
+                class="form-control"
+                placeholder="<%= user.name %>"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="no_activity">No Aktivitas</label>
+              <input
+                type="text"
+                name="no_activity"
+                value="<%= no_activity %>"
+                required
+                class="form-control"
+                readonly
+              />
+            </div>
+
+            <div class="form-group" style="display: none">
+              <label for="pic_telephone">Nomor Telepon PIC</label>
+              <input
+                type="text"
+                name="pic_telephone"
+                value="<%= user.telephone %>"
+                required
+                class="form-control"
+                placeholder="<%= user.telephone %>"
+              />
+            </div>
+
+            <div class="form-group" style="display: none">
+              <label for="pic_position">Jabatan PIC</label>
+              <input
+                type="text"
+                name="pic_position"
+                value="<%= user.role %>"
+                required
+                class="form-control"
+                placeholder="<%= user.role %>"
+              />
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+              Buat Aktivitas
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  // Validasi form di sisi klien
+  function validateForm(event) {
+    const namaPerusahaan = document
+      .getElementById("namaPerusahaan")
+      .value.trim();
+    if (namaPerusahaan !== "") {
+      Swal.fire("Tersimpan!", "Data Anda telah disimpan.", "success");
+      // Form akan dikirim setelah alert ditutup
+      return true;
+    } else {
+      Swal.fire("Error!", "Masukkan nama perusahaan yang valid.", "error");
+      event.preventDefault();
+      return false;
+    }
+  }
+</script>

@@ -43,3 +43,8 @@ app.use('/', router);
 app.listen(3000, () => {
     console.log('Server running at http://localhost:3000');
 });
+// Global middleware to make the user object available to all views
+app.use((req, res, next) => {
+  res.locals.user = req.session.user;  // Set the user session to be globally accessible
+  next();
+});

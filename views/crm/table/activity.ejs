@@ -1,0 +1,153 @@
+<div class="container mt-4">
+  <!-- Header -->
+  <div class="row mb-2">
+    <div class="col-sm-6">
+      <h1 class="m-0">Tabel Activity</h1>
+    </div>
+    <div class="col-sm-6">
+      <ol class="breadcrumb float-sm-right" style="background-color: #f4f6f9">
+        <li class="breadcrumb-item"><a href="#">Halaman Utama</a></li>
+        <li class="breadcrumb-item active">Tabel Activity</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Tombol dan Search -->
+  <div class="d-flex justify-content-between mb-2">
+    <a href="/create-activity" class="btn btn-sm btn-success"
+      >Tambah Activity</a
+    >
+    <form action="/activity" method="GET" class="d-flex justify-content-between mb-2">
+  <input type="text" name="search" class="form-control form-control-sm" placeholder="Cari activity..." value="<%= search || '' %>">
+  
+  <select name="sortBy" class="form-control form-control-sm">
+    <option value="created_at" <%= sortBy === 'created_at' ? 'selected' : '' %>>Tanggal Dibuat</option>
+    <option value="name" <%= sortBy === 'name' ? 'selected' : '' %>>Nama Activity</option>
+  </select>
+  
+  <select name="order" class="form-control form-control-sm">
+    <option value="asc" <%= order === 'asc' ? 'selected' : '' %>>Ascending</option>
+    <option value="desc" <%= order === 'desc' ? 'selected' : '' %>>Descending</option>
+  </select>
+  
+  <button type="submit" class="btn btn-sm btn-primary ml-2">Cari</button>
+</form>
+  </div>
+
+  <!-- Flash message -->
+  <% if (typeof success !== 'undefined') { %>
+  <div class="alert alert-success" role="alert"><%= success %></div>
+  <script>
+    setTimeout(function () {
+      document.querySelector(".alert").remove();
+    }, 3000);
+  </script>
+  <% } %>
+
+  <!-- Tabel -->
+  <table class="table table-striped table-bordered">
+    <thead class="table-dark">
+      <tr class="text-center align-middle">
+        <th style="width: 3em">No</th>
+        <th>Nama Activity</th>
+        <th>Jenis Perusahaan</th>
+        <th>Referal</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (activities && activities.length > 0) { %>
+        <% activities.forEach(function(activity, idx) { %>
+        <tr>
+          <td class="text-center"><%= idx + 1 %></td>
+          <td><%= activity.name_perusahaan %></td>
+          <td><%= activity.jenis_perusahaan %></td>
+          <td><%= activity.source_of_business %></td>
+          <td class="text-center">
+            <button
+              type="button"
+              class="btn btn-sm btn-info"
+              data-toggle="modal"
+              data-target="#detailModal<%= activity.id %>"
+            >
+              Detail
+            </button>
+
+            <!-- Modal -->
+            <div
+              class="modal fade"
+              id="detailModal<%= activity.id %>"
+              tabindex="-1"
+              role="dialog"
+              aria-labelledby="detailModalLabel<%= activity.id %>"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="detailModalLabel<%= activity.id %>">
+                      Detail Activity
+                    </h5>
+                    <button
+                      type="button"
+                      class="close"
+                      data-dismiss="modal"
+                      aria-label="Close"
+                    >
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <p><strong>Nama Perusahaan:</strong> <%= activity.name_perusahaan %></p>
+                    <p><strong>Jenis Perusahaan:</strong> <%= activity.jenis_perusahaan %></p>
+                    <p><strong>Referal:</strong> <%= activity.source_of_business %></p>
+                    <p><strong>Nama PIC:</strong> <%= activity.pic_name %></p>
+                    <p><strong>Telepon PIC:</strong> <%= activity.pic_telephone %></p>
+                    <p><strong>Jabatan PIC:</strong> <%= activity.pic_position %></p>
+                  </div>
+                  <div class="modal-footer">
+                    <button
+                      type="button"
+                      class="btn btn-secondary"
+                      data-dismiss="modal"
+                    >
+                      Close
+                    </button>
+                    <a href="/activity/edit/<%= activity.id %>" class="btn btn-primary">
+                      Edit
+                    </a>
+                    <form action="/activity/delete/<%= activity.id %>" method="POST" class="d-inline">
+                      <button type="submit" class="btn btn-danger" onclick="confirmDelete(event, this.form)">
+                        Hapus
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <% }); %>
+      <% } else { %>
+      <tr>
+        <td class="text-center" colspan="5">Tidak ada data</td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+
+  <!-- Pagination (optional, jika ada) -->
+  <% if (typeof pagination !== 'undefined') { %>
+  <div class="d-flex justify-content-end"><%= pagination %></div>
+  <% } %>
+</div>
+
+<script>
+  function confirmDelete(event, form) {
+    event.preventDefault();
+    if (confirm("Apakah Anda yakin ingin menghapus activity ini?")) {
+      form.submit();
+    }
+  }
+</script>
+

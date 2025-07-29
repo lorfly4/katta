@@ -73,6 +73,7 @@ router.post("/login", async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      telephone: user.telephone, // Tambahkan telepon jika ada
     };
 
     return res.redirect("/dashboard");
@@ -254,96 +255,111 @@ router.post('/clients/delete/:id', isAuthenticated, async (req, res) => {
 // =========================================================================================================
 
 // Route to list interactions
-router.get('/interactions', isAuthenticated, async (req, res) => {
-  if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales') {
-    return res.status(403).send('Forbidden');
-  }
+// router.get("/interactions", isAuthenticated, async (req, res) => {
+//   const { search, sortBy, order } = req.query; // Ambil parameter pencarian dan pengurutan
 
-  const userId = req.session.user.id;
+//   // Default sort jika tidak ada yang diberikan
+//   const sortColumn = sortBy || 'created_at'; // Kolom yang digunakan untuk pengurutan
+//   const sortOrder = order === 'desc' ? 'DESC' : 'ASC'; // Urutan pengurutan (asc/desc)
 
-  // Fetch only the interactions created by the logged-in user
-  const [rows] = await db.execute(`
-    SELECT interactions.*, clients.name AS client_name, users.name AS created_by_name
-    FROM interactions
-    JOIN clients ON interactions.client_id = clients.id
-    JOIN users ON interactions.created_by = users.id
-    WHERE interactions.created_by = ?
-    ORDER BY interactions.id DESC
-  `, [userId]);
+//   let sql = "SELECT * FROM interactions WHERE 1=1"; // Query dasar
+//   const params = [];
+//   const userRole = req.session.user.role;
 
-  const [clients] = await db.execute('SELECT id, name FROM clients WHERE created_by = ?', [userId]);
+//   // Filter interaksi berdasarkan peran (sales, admin-sales, admin)
+//   if (userRole === 'sales') {
+//     sql += " AND created_by = ?"; // Sales hanya bisa melihat interaksi yang mereka buat
+//     params.push(req.session.user.id);
+//   } else if (userRole === 'admin-sales' || userRole === 'admin') {
+//     // Admin-sales dan admin bisa melihat semua data, jadi tidak ada filter khusus
+//     // Bisa tambahkan filter lain jika perlu
+//   }
 
-  res.render('crm/table/interaksi', {
-    title: 'Daftar Interaksi',
-    user: req.session.user,
-    interactions: rows,
-    clients
-  });
-});
+//   // Jika ada kata kunci pencarian, cari di semua kolom
+//   if (search) {
+//     sql += " AND (client_name LIKE ? OR type LIKE ? OR notes LIKE ?)";
+//     params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+//   }
 
-// Route to add a new interaction
-router.get('/interactions/tambah', isAuthenticated, async (req, res) => {
-  if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales') {
-    return res.status(403).send('Forbidden');
-  }
+//   // Terapkan pengurutan
+//   sql += ` ORDER BY ${sortColumn} ${sortOrder}`;
 
-  const userId = req.session.user.id;
-  const [clients] = await db.execute('SELECT id, name FROM clients WHERE created_by = ?', [userId]);
-  res.render('crm/backend/createinteraksiklien', { title: 'Tambah Interaksi', user: req.session.user, clients });
-});
+//   // Eksekusi query
+//   const [rows] = await db.execute(sql, params);
+//   res.render('crm/table/interaksi', {
+//     title: 'Daftar Interaksi',
+//     user: req.session.user,
+//     interactions: rows,
+//     search,
+//     sortBy,
+//     order
+//   });
+// });
 
-// Route to save a new interaction
-router.post('/interactions', isAuthenticated, upload.single('attachment'), async (req, res) => {
-  if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales') {
-    return res.status(403).send('Forbidden');
-  }
 
-  const { client_id, type, notes, send_email, subjek } = req.body;
-  const userId = req.session.user.id;
-  const file = req.file;
+// // Route to add a new interaction
+// router.get('/interactions/tambah', isAuthenticated, async (req, res) => {
+//   if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales') {
+//     return res.status(403).send('Forbidden');
+//   }
 
-  // Insert the new interaction
-  await db.execute(`
-    INSERT INTO interactions (user_id, client_id, type, subjek, notes, file_path, send_email, created_by)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `, [userId, client_id, type, subjek, notes, file?.path || null, send_email ? 1 : 0, userId]);
+//   const userId = req.session.user.id;
+//   const [clients] = await db.execute('SELECT id, name FROM clients WHERE created_by = ?', [userId]);
+//   res.render('crm/backend/createinteraksiklien', { title: 'Tambah Interaksi', user: req.session.user, clients });
+// });
 
-  // If email is to be sent, send it
-  if (send_email) {
-    const [client] = await db.execute('SELECT email FROM clients WHERE id = ?', [client_id]);
-    const email = client[0]?.email;
+// // Route to save a new interaction
+// router.post('/interactions', isAuthenticated, upload.single('attachment'), async (req, res) => {
+//   if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales') {
+//     return res.status(403).send('Forbidden');
+//   }
 
-    if (email) {
-      const [emailConfig] = await db.execute('SELECT * FROM konfig_email LIMIT 1');
-      const { type, host, port, username, password } = emailConfig[0];
+//   const { client_id, type, notes, send_email, subjek } = req.body;
+//   const userId = req.session.user.id;
+//   const file = req.file;
 
-      const transporter = nodemailer.createTransport({
-        service: type === 'gmail' ? 'gmail' : undefined,
-        host: type === 'smtp' ? host : undefined,
-        port: type === 'smtp' ? port : undefined,
-        auth: {
-          user: username,
-          pass: password
-        }
-      });
+//   // Insert the new interaction
+//   await db.execute(`
+//     INSERT INTO interactions (user_id, client_id, type, subjek, notes, file_path, send_email, created_by)
+//     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+//   `, [userId, client_id, type, subjek, notes, file?.path || null, send_email ? 1 : 0, userId]);
 
-      const mailOptions = {
-        from: 'noreply',
-        to: email,
-        subject: subjek,
-        text: notes,
-        attachments: file ? [{
-          filename: file.originalname,
-          path: file.path
-        }] : []
-      };
+//   // If email is to be sent, send it
+//   if (send_email) {
+//     const [client] = await db.execute('SELECT email FROM clients WHERE id = ?', [client_id]);
+//     const email = client[0]?.email;
 
-      await transporter.sendMail(mailOptions);
-    }
-  }
+//     if (email) {
+//       const [emailConfig] = await db.execute('SELECT * FROM konfig_email LIMIT 1');
+//       const { type, host, port, username, password } = emailConfig[0];
 
-  res.redirect('/interactions');
-});
+//       const transporter = nodemailer.createTransport({
+//         service: type === 'gmail' ? 'gmail' : undefined,
+//         host: type === 'smtp' ? host : undefined,
+//         port: type === 'smtp' ? port : undefined,
+//         auth: {
+//           user: username,
+//           pass: password
+//         }
+//       });
+
+//       const mailOptions = {
+//         from: 'noreply',
+//         to: email,
+//         subject: subjek,
+//         text: notes,
+//         attachments: file ? [{
+//           filename: file.originalname,
+//           path: file.path
+//         }] : []
+//       };
+
+//       await transporter.sendMail(mailOptions);
+//     }
+//   }
+
+//   res.redirect('/interactions');
+// });
 
 // KONFIGURASI EMAIL 
 
@@ -404,22 +420,167 @@ router.post('/prosesemail', isAuthenticated, async (req, res) => {
 
 
 // =========================================================================================================
-// Admin-Sales: Daftar 
 
-// Route to list all clients for admin-sales
-router.get('/admin-sales/clients', isAuthenticated, async (req, res) => {
-  if (req.session.user.role !== 'admin' && req.session.user.role !== 'admin-sales') {
-    return res.status(403).send('Forbidden');
+// Routes untuk menampilkan daftar aktivitas
+router.get('/activity', isAuthenticated, async (req, res) => {
+  if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales' && req.session.user.role !== 'admin-sales') {
+    return res.status(403).send('Dilarang');
   }
 
-  // Fetch all clients without any filtering and without joining the users table
-  const [rows] = await db.execute(`
-    SELECT * FROM clients
-    ORDER BY id DESC
-  `);
+  const search = req.query.search || '';
+  const sortBy = req.query.sortBy || 'created_at';
+  const order = req.query.order || 'desc';
 
-  res.render('crm/table/klien', { title: 'Daftar Klien', user: req.session.user, clients: rows });
+  const [activities] = await db.execute(
+    `SELECT * FROM activities
+    WHERE no_activity LIKE '%${search}%'
+    ORDER BY ${sortBy} ${order}`
+  );
+
+  res.render('crm/table/activity', {
+    title: 'Daftar Aktivitas',
+    user: req.session.user,
+    activities,
+    search,
+    sortBy,
+    order
+  });
 });
+
+// Routes untuk menampilkan form tambah aktivitas
+router.get('/create-activity', isAuthenticated, async (req, res) => {
+  if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales' && req.session.user.role !== 'admin-sales') {
+    return res.status(403).send('Dilarang');
+  }
+
+  // Ambil data klien dari database
+  const [clients] = await db.execute('SELECT * FROM clients');
+
+  // Menghitung jumlah aktivitas untuk tahun ini
+  const currentYear = new Date().getFullYear();
+  const [activityCount] = await db.execute('SELECT COUNT(*) AS count FROM activities WHERE YEAR(created_at) = ?', [currentYear]);
+
+  // Menentukan nomor aktivitas berdasarkan jumlah aktivitas di tahun ini
+  const no_activity = `ka/${activityCount[0].count + 1}/${currentYear}`;
+
+  // Kirimkan variabel no_activity ke EJS
+  res.render('crm/backend/create-activity', {
+    title: 'Buat Aktivitas',
+    user: req.session.user,
+    clients: clients, // pastikan clients ada
+    no_activity // pastikan no_activity dikirimkan ke EJS
+  });
+});
+
+// Routes untuk menyimpan data aktivitas yang baru dibuat
+router.post('/create-activity/add', isAuthenticated, async (req, res) => {
+  const { name_perusahaan, jenis_perusahaan, source_of_business, pic_name, pic_telephone, pic_position } = req.body;
+  const currentYear = new Date().getFullYear();
+
+  // Hitung no_activity berdasarkan tahun dan jumlah aktivitas yang ada
+  const [activityCount] = await db.execute('SELECT COUNT(*) AS count FROM activities WHERE YEAR(created_at) = ?', [currentYear]);
+  const no_activity = `ka/${activityCount[0].count + 1}/${currentYear}`;
+
+  // Log data yang diterima untuk debugging
+  console.log(req.body);  // Log untuk memeriksa data yang diterima
+
+  try {
+    // Simpan data ke dalam database
+    await db.execute('INSERT INTO activities (name_perusahaan, jenis_perusahaan, source_of_business, pic_name, pic_telephone, pic_position, no_activity, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())',
+      [name_perusahaan, jenis_perusahaan, source_of_business, pic_name, pic_telephone, pic_position, no_activity]);
+
+    // Arahkan ke halaman daftar aktivitas setelah berhasil
+    res.redirect('/activity');
+  } catch (err) {
+    console.error(err);  // Log kesalahan
+    res.render('crm/backend/create-activity', { no_activity, error: 'Terjadi kesalahan server', title: 'Buat Aktivitas', user: req.session.user, clients: [] });
+  }
+});
+
+
+router.get('/po-management', isAuthenticated, (req, res) => {
+  res.render('po-management', { title: 'Pengelolaan PO', user: req.session.user });
+});
+
+router.post('/create-po', isAuthenticated, async (req, res) => {
+  const { po_number, po_details, po_status } = req.body;
+
+  // Simpan PO ke database
+  await db.execute('INSERT INTO po (po_number, po_details, po_status) VALUES (?, ?, ?)', [po_number, po_details, po_status]);
+
+  res.redirect('/po-management');
+});
+
+router.get('/interactions', isAuthenticated, async (req, res) => {
+  const [rows] = await db.execute('SELECT * FROM interactions');
+  res.render('crm/table/interaksi', { title: 'Interaksi', user: req.session.user, interactions: rows });
+});
+
+router.post('/add-interaction', isAuthenticated, async (req, res) => {
+  const { client_id, interaction_type, interaction_date, notes } = req.body;
+  await db.execute('INSERT INTO interactions (client_id, interaction_type, interaction_date, notes) VALUES (?, ?, ?, ?)', [client_id, interaction_type, interaction_date, notes]);
+
+  res.redirect('/interactions');
+});
+
+
+// =========================================================================================================
+
+// Rute untuk klien
+router.get("/admin-sales/clients", isAuthenticated, async (req, res) => {
+  const { search, sortBy, order } = req.query;
+  const sortColumn = sortBy || 'created_at';
+  const sortOrder = order === 'desc' ? 'DESC' : 'ASC';
+  let sql = "SELECT * FROM clients WHERE 1=1";
+  const params = [];
+  const userRole = req.session.user.role;
+
+  if (userRole === 'sales') {
+    sql += " AND created_by = ?"; // Sales hanya bisa melihat klien yang mereka buat
+    params.push(req.session.user.id);
+  }
+
+  if (search) {
+    sql += " AND (name LIKE ? OR company LIKE ? OR email LIKE ?)";
+    params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+  }
+
+  sql += ` ORDER BY ${sortColumn} ${sortOrder}`;
+
+  const [rows] = await db.execute(sql, params);
+  res.render('crm/table/klien', {
+    title: 'Tabel Klien',
+    user: req.session.user,
+    clients: rows,
+    search,
+    sortBy,
+    order
+  });
+});
+
+// Rute untuk detailKlien
+router.get("/admin-sales/clients/detail/:userId", isAuthenticated, async (req, res) => {
+  const userId = req.params.userId;
+  const [user] = await db.execute('SELECT id, name FROM users WHERE id = ?', [userId]);
+
+  if (!user.length) {
+    return res.status(404).send('User not found');
+  }
+
+  const [clients] = await db.execute(`
+    SELECT clients.id, clients.name AS client_name, clients.company, clients.email, clients.phone, users.name AS creator_name
+    FROM clients
+    LEFT JOIN users ON clients.created_by = users.id
+    WHERE clients.created_by = ?
+    ORDER BY clients.id DESC`, [userId]);
+
+  res.render('crm/table/detailKlien', {
+    user: req.session.user,
+    selectedUser: user[0],
+    clients
+  });
+});
+
 
 // Route to add a new client
 router.post('/admin-sales/clients', isAuthenticated, async (req, res) => {
@@ -476,58 +637,80 @@ router.post('/admin-sales/clients/delete/:id', isAuthenticated, async (req, res)
 });
 
 
-router.get('/admin-sales/interactions', isAuthenticated, async (req, res) => {
-  if (req.session.user.role !== 'admin' && req.session.user.role !== 'admin-sales') {
-    return res.status(403).send('Forbidden');
+// Rute untuk adminInteraksi
+router.get("/admin-sales/interactions", isAuthenticated, async (req, res) => {
+  const { search, sortBy, order } = req.query;
+  const sortColumn = sortBy || 'created_at';
+  const sortOrder = order === 'desc' ? 'DESC' : 'ASC';
+  let sql = "SELECT * FROM interactions WHERE 1=1";
+  const params = [];
+  const userRole = req.session.user.role;
+
+  if (userRole === 'sales') {
+    sql += " AND created_by = ?"; // Sales hanya melihat interaksi yang mereka buat
+    params.push(req.session.user.id);
   }
 
-  const [rows] = await db.execute(`
-    SELECT interactions.*, clients.name AS client_name, users.name AS created_by_name
-    FROM interactions
-    JOIN clients ON interactions.client_id = clients.id
-    JOIN users ON interactions.created_by = users.id
-    ORDER BY interactions.id DESC
-  `);
+  if (search) {
+    sql += " AND (client_name LIKE ? OR type LIKE ? OR notes LIKE ? OR created_by_name LIKE ?)";
+    params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+  }
 
-  const [clients] = await db.execute('SELECT id, name FROM clients');
-  const [salesUsers] = await db.execute('SELECT id, name FROM users WHERE role = "sales"');
+  sql += ` ORDER BY ${sortColumn} ${sortOrder}`;
 
-  res.render('crm/table/interaksi', {
-    title: 'Daftar Interaksi',
+  const [rows] = await db.execute(sql, params);
+  const [salesUsers] = await db.execute('SELECT id, name FROM users WHERE role = ?', ['sales']);
+
+  res.render('crm/table/adminInteraksi', {
+    title: 'Tabel Interaksi Sales',
     user: req.session.user,
     interactions: rows,
-    clients,
+    search,
     salesUsers
   });
 });
 
-router.get('/admin-sales/interactions/detail/:userId', isAuthenticated, async (req, res) => {
-  if (req.session.user.role !== 'admin' && req.session.user.role !== 'admin-sales') {
-    return res.status(403).send('Forbidden');
-  }
 
+// Rute untuk detailInteraksi
+router.get("/admin-sales/interactions/detail/:userId", isAuthenticated, async (req, res) => {
   const userId = req.params.userId;
+  const { search, sortBy, order } = req.query; // Ambil parameter pencarian dan pengurutan
+  const sortColumn = sortBy || 'interactions.created_at'; // Gunakan alias tabel untuk created_at
+  const sortOrder = order === 'desc' ? 'DESC' : 'ASC';
 
-  // Ambil data user
   const [user] = await db.execute('SELECT id, name FROM users WHERE id = ?', [userId]);
 
-  if (user.length === 0) {
+  if (!user.length) {
     return res.status(404).send('User not found');
   }
 
-  // Ambil klien yang dibuat oleh user
-  const [clients] = await db.execute('SELECT id, name FROM clients WHERE created_by = ?', [userId]);
+  let sql = `
+    SELECT interactions.type, interactions.notes, clients.name AS client_name
+    FROM interactions
+    JOIN clients ON interactions.client_id = clients.id
+    WHERE interactions.created_by = ?`;
 
-  // Ambil interaksi yang dibuat oleh user
-  const [interactions] = await db.execute('SELECT type, notes FROM interactions WHERE created_by = ?', [userId]);
+  const params = [userId];
 
-  res.json({
-    user: user[0],
-    clients,
-    interactions
+  if (search) {
+    sql += " AND (clients.name LIKE ? OR interactions.type LIKE ? OR interactions.notes LIKE ?)";
+    params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+  }
+
+  // Menambahkan pengurutan berdasarkan kolom yang diberikan
+  sql += ` ORDER BY ${sortColumn} ${sortOrder}`;
+
+  const [interactions] = await db.execute(sql, params);
+
+  res.render('crm/table/detailInteraksi', {
+    sales: user[0],
+    user: req.session.user,
+    interactions,
+    search,
+    sortBy,
+    order
   });
 });
-
 
 router.get('/admin-sales/interactions/detail/:interactionId', isAuthenticated, async (req, res) => {
   if (req.session.user.role !== 'admin' && req.session.user.role !== 'admin-sales') {

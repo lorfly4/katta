@@ -17,16 +17,21 @@
     <a href="crm/backend/createklien" class="btn btn-sm btn-success"
       >Tambah Klien</a
     >
-    <form action="/clients" method="GET" class="d-flex">
-      <input
-        type="text"
-        name="search"
-        class="form-control form-control-sm"
-        placeholder="Cari klien..."
-        value="<%= typeof search !== 'undefined' ? search : '' %>"
-      />
-      <button type="submit" class="btn btn-sm btn-primary ml-2">Cari</button>
-    </form>
+    <form action="/admin-sales/clients" method="GET" class="d-flex justify-content-between mb-2">
+  <input type="text" name="search" class="form-control form-control-sm" placeholder="Cari klien..." value="<%= search || '' %>">
+  
+  <select name="sortBy" class="form-control form-control-sm">
+    <option value="created_at" <%= sortBy === 'created_at' ? 'selected' : '' %>>Tanggal Dibuat</option>
+    <option value="name" <%= sortBy === 'name' ? 'selected' : '' %>>Nama Klien</option>
+  </select>
+  
+  <select name="order" class="form-control form-control-sm">
+    <option value="asc" <%= order === 'asc' ? 'selected' : '' %>>Ascending</option>
+    <option value="desc" <%= order === 'desc' ? 'selected' : '' %>>Descending</option>
+  </select>
+  
+  <button type="submit" class="btn btn-sm btn-primary ml-2">Cari</button>
+</form>
   </div>
 
   <!-- Flash message -->
@@ -59,7 +64,7 @@
         <td><%= client.name %></td>
         <td><%= client.email %></td>
         <td><%= client.phone %></td>
-        <td><%= client.address %></td>
+        <td><%= client.created_by %></td>
         <td class="text-center">
           <a
             href="/clients/edit/<%= client.id %>"
