@@ -11,7 +11,7 @@ const nodemailer = require('nodemailer');
 // Konfigurasi multer untuk simpan file di public/img
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "../public/img"));
+    cb(null, path.join(__dirname, "../public/uploads"));
   },
   filename: function (req, file, cb) {
     // Simpan dengan nama unik (timestamp + originalname)
@@ -432,9 +432,13 @@ router.get('/activity', isAuthenticated, async (req, res) => {
   const order = req.query.order || 'desc';
 
   const [activities] = await db.execute(
-    `SELECT * FROM activities
-    WHERE no_activity LIKE '%${search}%'
-    ORDER BY ${sortBy} ${order}`
+    `SELECT activities.*,
+    plans.id as plan_id, plans.tanggal_fu, plans.tipe_fu, plans.hasil_fu, plans.hasil_akhir
+    FROM activities
+    LEFT JOIN plans ON activities.id = plans.id_activity
+    WHERE no_activity LIKE ? 
+    ORDER BY ${sortBy} ${order}`,
+    [`%${search}%`]
   );
 
   res.render('crm/table/activity', {
@@ -446,6 +450,40 @@ router.get('/activity', isAuthenticated, async (req, res) => {
     order
   });
 });
+
+router.get('/activity/:id', isAuthenticated, async (req, res) => {
+  const activityId = req.params.id;
+  const user = req.session.user;
+  const search = req.query.search || '';
+  const sortBy = req.query.sortBy || 'created_at';
+  const order = req.query.order || 'desc';
+
+  if (user.role !== 'admin' && user.role !== 'sales' && user.role !== 'admin-sales') {
+    return res.status(403).send('Dilarang');
+  }
+  try {
+    const [activity] = await db.execute(
+      `SELECT activities.*, plans.file_fu, plans.tanggal_fu, plans.tipe_fu, plans.hasil_fu, plans.hasil_akhir, plans.file_akhir
+      FROM activities
+      LEFT JOIN plans ON activities.id = plans.id_activity
+      WHERE activities.id = ?`,
+      [activityId]
+    );
+
+    if (activity.length > 0) {
+      res.render('crm/table/detailactivity', {
+        activity: activity[0],
+        user
+      });
+    } else {
+      res.status(404).send('Activity tidak ditemukan');
+    }
+  } catch (err) {
+    console.error('Error fetching activity:', err);
+    res.status(500).send('Terjadi kesalahan saat mengambil data activity');
+  }
+});
+
 
 // Routes untuk menampilkan form tambah aktivitas
 router.get('/create-activity', isAuthenticated, async (req, res) => {
@@ -494,6 +532,124 @@ router.post('/create-activity/add', isAuthenticated, async (req, res) => {
   } catch (err) {
     console.error(err);  // Log kesalahan
     res.render('crm/backend/create-activity', { no_activity, error: 'Terjadi kesalahan server', title: 'Buat Aktivitas', user: req.session.user, clients: [] });
+  }
+});
+
+// Route untuk menampilkan form create plan dan memilih activity
+router.get('/create-plan', isAuthenticated, async (req, res) => {
+  // Ambil data semua activities
+  const [activities] = await db.execute('SELECT * FROM activities');
+
+  // Render form create plan
+  res.render('crm/backend/create-plans', {
+    title: 'Create Plan',
+    user: req.session.user, // Tambahkan user ke dalam variabel yang akan dikirimkan ke EJS
+    activities: activities
+  });
+});
+
+// POST: Menyimpan Plan Baru
+router.post('/plans', isAuthenticated, async (req, res) => {
+  const { tanggal_fu, tipe_fu, id_activity } = req.body;
+
+  try {
+    // Menyimpan data plan yang baru ke dalam tabel plans
+    await db.execute(
+      'INSERT INTO plans (tanggal_fu, tipe_fu, id_activity) VALUES (?, ?, ?)',
+      [tanggal_fu, tipe_fu, id_activity]
+    );
+
+    // Redirect ke halaman detail activity setelah plan berhasil ditambahkan
+    res.redirect(`/activity/${id_activity}`);
+  } catch (err) {
+    console.error('Error adding plan:', err);
+    res.status(500).send('Terjadi kesalahan saat menyimpan rencana.');
+  }
+});
+
+router.post('/plans/hasil-fu', upload.single('file_upload'), isAuthenticated, async (req, res) => {
+  const { plan_id, hasil_fu, id_activity } = req.body;
+  const file = req.file;
+
+  try {
+    // Log to check what data is received
+    console.log('Received data for Hasil FU:', { plan_id, hasil_fu, id_activity, file });
+    console.log('Received plan_id:', plan_id);  // Log plan_id
+
+    // Define file path and file name
+    const fileName = file ? file.filename : null;
+    const filePath = file ? '/uploads/' + file.filename : null;
+
+    // Log to check file path
+    console.log('File info:', { fileName, filePath });
+
+    // Ensure plan_id is correct and an integer
+    const planId = parseInt(plan_id, 10);
+
+    // Log before executing the SQL query
+    console.log('Executing SQL query to update plan_id:', planId);
+
+    // Update the database
+    const [result] = await db.execute(
+      `UPDATE plans SET hasil_fu = ?, file_fu = ? WHERE id = ?`,
+      [hasil_fu, filePath, planId]
+    );
+
+    // Log to see the result of the SQL query
+    console.log('Database update result:', result);
+
+    // Check if the update affected any rows
+    if (result.affectedRows > 0) {
+      res.redirect(`/activity/${id_activity}`);
+    } else {
+      // No rows updated, log and return error
+      console.error('No rows affected in database update');
+      res.status(500).send('Tidak ada data yang diperbarui di database.');
+    }
+  } catch (err) {
+    // Log error
+    console.error('Error updating FU result and file:', err);
+    res.status(500).send('Terjadi kesalahan saat memperbarui hasil FU dan file.');
+  }
+});
+
+
+router.post('/plans/hasil-akhir', upload.single('file_upload'), isAuthenticated, async (req, res) => {
+  const { plan_id, hasil_akhir, id_activity } = req.body;
+  const file = req.file;
+
+  try {
+    // Log untuk memastikan data yang diterima
+    console.log('Received data for Hasil Akhir:', { plan_id, hasil_akhir, id_activity, file });
+
+    // Menentukan nama dan path file
+    const fileName = file ? file.filename : null;
+    const filePath = file ? '/uploads/' + file.filename : null;
+
+    // Log untuk mengecek path file yang akan disimpan
+    console.log('File info:', { fileName, filePath });
+
+    // Update database
+    const [result] = await db.execute(
+      `UPDATE plans SET hasil_akhir = ?, file_akhir = ? WHERE id = ?`,
+      [hasil_akhir, filePath, plan_id]
+    );
+
+    // Log untuk memeriksa hasil dari query database
+    console.log('Database update result:', result);
+
+    if (result.affectedRows > 0) {
+      // Jika ada data yang diperbarui, redirect ke halaman activity
+      res.redirect(`/activity/${id_activity}`);
+    } else {
+      // Jika tidak ada data yang diperbarui, tampilkan pesan error
+      console.error('No rows affected in database update');
+      res.status(500).send('Tidak ada data yang diperbarui di database.');
+    }
+  } catch (err) {
+    // Log error yang terjadi
+    console.error('Error updating Akhir result and file:', err);
+    res.status(500).send('Terjadi kesalahan saat memperbarui hasil Akhir dan file.');
   }
 });
 

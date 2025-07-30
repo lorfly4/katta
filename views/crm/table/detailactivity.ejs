@@ -1,0 +1,85 @@
+<!-- Main Content -->
+<section class="content">
+  <div class="container-fluid">
+    <!-- Card for Activity Details -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Informasi Activity</h3>
+      </div>
+      <div class="card-body">
+        <p><strong>Nama Perusahaan:</strong> <%= activity.name_perusahaan %></p>
+        <p>
+          <strong>Jenis Perusahaan:</strong> <%= activity.jenis_perusahaan %>
+        </p>
+        <p><strong>Referal:</strong> <%= activity.source_of_business %></p>
+        <p><strong>Nama PIC:</strong> <%= activity.pic_name %></p>
+        <p><strong>Telepon PIC:</strong> <%= activity.pic_telephone %></p>
+        <p><strong>Jabatan PIC:</strong> <%= activity.pic_position %></p>
+      </div>
+    </div>
+
+    <!-- Card for Follow Up (FU) Details -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h3 class="card-title">Follow Up (FU)</h3>
+      </div>
+      <div class="card-body">
+        <p><strong>Tanggal FU:</strong> <span class="tanggal-fu" data-date="<%= activity.tanggal_fu %>"></span></p>
+        <p><strong>Tipe FU:</strong> <%= activity.tipe_fu %></p>
+        <p>
+          <strong>Hasil FU:</strong> <%= activity.hasil_fu || 'Belum diisi' %>
+        </p>
+        <p>
+          <strong>Terlampir File:</strong>
+          <% if (activity.file_fu) { %>
+          <a href="<%= activity.file_fu %>" target="_blank"
+            >Download</a
+          >
+          <% } else { %> tidak ada file <% } %>
+        </p>
+      </div>
+    </div>
+
+    <!-- Card for Hasil Akhir Details -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h3 class="card-title">Hasil Akhir</h3>
+      </div>
+      <div class="card-body">
+        <p>
+          <strong>Hasil Akhir:</strong> <%= activity.hasil_akhir || 'Belum diisi' %>
+        </p>
+        <p>
+          <strong>Terlampir File:</strong>
+          <% if (activity.file_akhir) { %>
+          <a href="<%= activity.file_akhir %>" target="_blank">Download</a>
+          <% } else { %> tidak ada file <% } %>
+        </p>
+      </div>
+    </div>
+
+    <!-- Buttons for Edit and Back -->
+    <div class="mt-3">
+      <a href="/activity" class="btn btn-primary">Kembali ke Daftar Activity</a>
+      <a href="/activity/edit/<%= activity.id %>" class="btn btn-warning ml-2">Edit Activity</a>
+    </div>
+  </div>
+</section>
+<script>
+  // Fungsi untuk memformat tanggal dalam format dd/mm/yyyy
+  function formatTanggal(dateString) {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0'); // Menambah 0 di depan jika tanggal < 10
+    const month = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][date.getMonth()];
+    const year = date.getFullYear();
+
+    return `${day} ${month} ${year}`;
+  }
+
+  // Menggunakan fungsi formatTanggal untuk memformat tanggal yang ada di tabel
+  document.querySelectorAll('.tanggal-fu').forEach((element) => {
+    const originalDate = element.getAttribute('data-date');
+    element.textContent = formatTanggal(originalDate);
+  });
+</script>
+

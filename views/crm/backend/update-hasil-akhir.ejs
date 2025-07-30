@@ -1,0 +1,43 @@
+<div class="container mt-4">
+  <div class="row mb-2">
+    <div class="col-sm-6">
+      <h1 class="m-0">Tambah Hasil Akhir</h1>
+    </div>
+    <div class="col-sm-6">
+      <ol class="breadcrumb float-sm-right" style="background-color: #f4f6f9">
+        <li class="breadcrumb-item"><a href="#">Home</a></li>
+        <li class="breadcrumb-item active">Tambah Hasil Akhir</li>
+      </ol>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">Input Hasil Akhir</div>
+        <div class="card-body">
+          <!-- Form untuk input hasil akhir -->
+          <form action="/plans/hasil-akhir" method="POST">
+            <div class="form-group">
+              <label for="plan_id">Pilih Plan</label>
+              <select name="plan_id" id="plan_id" class="form-control" required>
+                <% plans.forEach(function(plan) { %>
+                <option value="<%= plan.id %>">
+                  <%= plan.tanggal_fu %> - <%= plan.tipe_fu %>
+                </option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="hasil_akhir">Hasil Akhir</label>
+              <textarea name="hasil_akhir" id="hasil_akhir" class="form-control" rows="3"></textarea>
+            </div>
+
+            <!-- Tombol submit untuk menyimpan hasil akhir -->
+            <button type="submit" class="btn btn-primary">Simpan Hasil Akhir</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

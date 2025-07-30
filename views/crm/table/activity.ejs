@@ -14,132 +14,258 @@
 
   <!-- Tombol dan Search -->
   <div class="d-flex justify-content-between mb-2">
-    <a href="/create-activity" class="btn btn-sm btn-success"
-      >Tambah Activity</a
-    >
+    <a href="/create-activity" class="btn btn-sm btn-success">Tambah Activity</a>
     <form action="/activity" method="GET" class="d-flex justify-content-between mb-2">
-  <input type="text" name="search" class="form-control form-control-sm" placeholder="Cari activity..." value="<%= search || '' %>">
-  
-  <select name="sortBy" class="form-control form-control-sm">
-    <option value="created_at" <%= sortBy === 'created_at' ? 'selected' : '' %>>Tanggal Dibuat</option>
-    <option value="name" <%= sortBy === 'name' ? 'selected' : '' %>>Nama Activity</option>
-  </select>
-  
-  <select name="order" class="form-control form-control-sm">
-    <option value="asc" <%= order === 'asc' ? 'selected' : '' %>>Ascending</option>
-    <option value="desc" <%= order === 'desc' ? 'selected' : '' %>>Descending</option>
-  </select>
-  
-  <button type="submit" class="btn btn-sm btn-primary ml-2">Cari</button>
-</form>
+      <input type="text" name="search" class="form-control form-control-sm" placeholder="Cari activity..."
+        value="<%= search || '' %>">
+      <select name="sortBy" class="form-control form-control-sm">
+        <option value="created_at" <%=sortBy==='created_at' ? 'selected' : '' %>>Tanggal Dibuat</option>
+        <option value="name" <%=sortBy==='name' ? 'selected' : '' %>>Nama Activity</option>
+      </select>
+      <select name="order" class="form-control form-control-sm">
+        <option value="asc" <%=order==='asc' ? 'selected' : '' %>>Ascending</option>
+        <option value="desc" <%=order==='desc' ? 'selected' : '' %>>Descending</option>
+      </select>
+      <button type="submit" class="btn btn-sm btn-primary ml-2">Cari</button>
+    </form>
   </div>
 
   <!-- Flash message -->
-  <% if (typeof success !== 'undefined') { %>
-  <div class="alert alert-success" role="alert"><%= success %></div>
-  <script>
-    setTimeout(function () {
-      document.querySelector(".alert").remove();
-    }, 3000);
-  </script>
-  <% } %>
+  <% if (typeof success !=='undefined' ) { %>
+    <div class="alert alert-success" role="alert">
+      <%= success %>
+    </div>
+    <script>
+      setTimeout(function () {
+        document.querySelector(".alert").remove();
+      }, 3000);
+    </script>
+    <% } %>
 
-  <!-- Tabel -->
-  <table class="table table-striped table-bordered">
-    <thead class="table-dark">
-      <tr class="text-center align-middle">
-        <th style="width: 3em">No</th>
-        <th>Nama Activity</th>
-        <th>Jenis Perusahaan</th>
-        <th>Referal</th>
-        <th>Aksi</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% if (activities && activities.length > 0) { %>
-        <% activities.forEach(function(activity, idx) { %>
-        <tr>
-          <td class="text-center"><%= idx + 1 %></td>
-          <td><%= activity.name_perusahaan %></td>
-          <td><%= activity.jenis_perusahaan %></td>
-          <td><%= activity.source_of_business %></td>
-          <td class="text-center">
-            <button
-              type="button"
-              class="btn btn-sm btn-info"
-              data-toggle="modal"
-              data-target="#detailModal<%= activity.id %>"
-            >
-              Detail
-            </button>
+      <!-- Tabel -->
+      <table class="table table-striped table-bordered">
+        <thead class="table-dark">
+          <tr class="text-center align-middle">
+            <th style="width: 3em">No</th>
+            <th>Nama Activity</th>
+            <th>Jenis Perusahaan</th>
+            <th>Referal</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (activities && activities.length> 0) { %>
+            <% activities.forEach(function(activity, idx) { %>
+              <tr>
+                <td class="text-center">
+                  <%= idx + 1 %>
+                </td>
+                <td>
+                  <%= activity.name_perusahaan %>
+                </td>
+                <td>
+                  <%= activity.jenis_perusahaan %>
+                </td>
+                <td>
+                  <%= activity.source_of_business %>
+                </td>
+                <td class="text-center">
+                  <!-- Tombol Detail untuk Modal -->
+                  <a href="/activity/<%= activity.id %>" class="btn btn-sm btn-info">
+                    Detail
+                  </a>
 
-            <!-- Modal -->
-            <div
-              class="modal fade"
-              id="detailModal<%= activity.id %>"
-              tabindex="-1"
-              role="dialog"
-              aria-labelledby="detailModalLabel<%= activity.id %>"
-              aria-hidden="true"
-            >
-              <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="detailModalLabel<%= activity.id %>">
-                      Detail Activity
-                    </h5>
-                    <button
-                      type="button"
-                      class="close"
-                      data-dismiss="modal"
-                      aria-label="Close"
-                    >
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-                  </div>
-                  <div class="modal-body">
-                    <p><strong>Nama Perusahaan:</strong> <%= activity.name_perusahaan %></p>
-                    <p><strong>Jenis Perusahaan:</strong> <%= activity.jenis_perusahaan %></p>
-                    <p><strong>Referal:</strong> <%= activity.source_of_business %></p>
-                    <p><strong>Nama PIC:</strong> <%= activity.pic_name %></p>
-                    <p><strong>Telepon PIC:</strong> <%= activity.pic_telephone %></p>
-                    <p><strong>Jabatan PIC:</strong> <%= activity.pic_position %></p>
-                  </div>
-                  <div class="modal-footer">
-                    <button
-                      type="button"
-                      class="btn btn-secondary"
-                      data-dismiss="modal"
-                    >
-                      Close
-                    </button>
-                    <a href="/activity/edit/<%= activity.id %>" class="btn btn-primary">
-                      Edit
-                    </a>
-                    <form action="/activity/delete/<%= activity.id %>" method="POST" class="d-inline">
-                      <button type="submit" class="btn btn-danger" onclick="confirmDelete(event, this.form)">
-                        Hapus
-                      </button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </td>
-        </tr>
-        <% }); %>
-      <% } else { %>
-      <tr>
-        <td class="text-center" colspan="5">Tidak ada data</td>
-      </tr>
-      <% } %>
-    </tbody>
-  </table>
+                  <!-- Tombol Create Plans -->
+                  <button type="button" class="btn btn-sm btn-warning" data-toggle="modal"
+                    data-target="#createPlansModal<%= activity.id %>">
+                    Create Plans
+                  </button>
 
-  <!-- Pagination (optional, jika ada) -->
-  <% if (typeof pagination !== 'undefined') { %>
-  <div class="d-flex justify-content-end"><%= pagination %></div>
-  <% } %>
+                  <!-- Tombol Create Hasil -->
+                  <button type="button" class="btn btn-sm btn-secondary" data-toggle="modal"
+                    data-target="#createHasilModal<%= activity.id %>">
+                    Create Hasil
+                  </button>
+
+                  <!-- Modal Detail Activity -->
+                  <div class="modal fade" id="detailModal<%= activity.id %>" tabindex="-1" role="dialog"
+                    aria-labelledby="detailModalLabel<%= activity.id %>" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="detailModalLabel<%= activity.id %>">
+                            Detail Follow Up - <%= activity.no_activity %>
+                          </h5>
+                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                        </div>
+                        <div class="modal-body">
+                          <p><strong>Nama Perusahaan:</strong>
+                            <%= activity.name_perusahaan %>
+                          </p>
+                          <p><strong>Jenis Perusahaan:</strong>
+                            <%= activity.jenis_perusahaan %>
+                          </p>
+                          <p><strong>Referal:</strong>
+                            <%= activity.source_of_business %>
+                          </p>
+                          <p><strong>Nama PIC:</strong>
+                            <%= activity.pic_name %>
+                          </p>
+                          <p><strong>Telepon PIC:</strong>
+                            <%= activity.pic_telephone %>
+                          </p>
+                          <p><strong>Jabatan PIC:</strong>
+                            <%= activity.pic_position %>
+                          </p>
+                          <h4>Follow Up (FU)</h4>
+                          <p><strong>Tanggal FU:</strong> <span class="tanggal-fu"
+                              data-date="<%= activity.tanggal_fu %>"></span></p>
+                          <p><strong>Tipe FU:</strong>
+                            <%= activity.tipe_fu %>
+                          </p>
+                          <p><strong>Hasil FU:</strong>
+                            <%= activity.hasil_fu || 'Belum diisi' %>
+                          </p>
+                          <p><strong>Terlampir File:</strong>
+                            <% if (activity.file_fu) { %>
+                              <a href="<%= '/uploads/' + activity.file_fu %>" target="_blank">Download</a>
+                              <% } else { %>
+                                tidak ada file
+                                <% } %>
+                          </p>
+                          <h4>Hasil Akhir</h4>
+                          <p><strong>Hasil Akhir:</strong>
+                            <%= activity.hasil_akhir || 'Belum diisi' %>
+                          </p>
+                          <p><strong>Terlampir File:</strong>
+                            <% if (activity.file_fu) { %>
+                              <a href="<%= '/uploads/' + activity.file_akhir %>" target="_blank">Download</a>
+                              <% } else { %>
+                                tidak ada file
+                                <% } %>
+                          </p>
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            Close
+                          </button>
+                          <a href="/activity/edit/<%= activity.id %>" class="btn btn-primary">
+                            Edit
+                          </a>
+                          <form action="/activity/delete/<%= activity.id %>" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-danger" onclick="confirmDelete(event, this.form)">
+                              Hapus
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Modal Create Hasil -->
+                  <div class="modal fade" id="createHasilModal<%= activity.id %>" tabindex="-1" role="dialog"
+                    aria-labelledby="createHasilLabel<%= activity.id %>" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="createHasilLabel<%= activity.id %>">Create Hasil for <%=
+                              activity.name_perusahaan %>
+                          </h5>
+                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                        </div>
+                        <div class="modal-body">
+                          <!-- Dropdown Pilihan Hasil -->
+                          <div class="form-group">
+                            <label for="hasil_type">Pilih Jenis Hasil</label>
+                            <select name="hasil_type" id="hasil_type<%= activity.id %>" class="form-control"
+                              onchange="showFormByType(this, <%= activity.id %>)">
+                              <option value="hasil_fu">Hasil FU</option>
+                              <option value="hasil_akhir">Hasil Akhir</option>
+                            </select>
+                          </div>
+
+                          <!-- Form untuk Hasil FU -->
+                          <form action="/plans/hasil-fu" method="POST" enctype="multipart/form-data"
+                            id="formHasilFu<%= activity.id %>" style="display:none;">
+                            <input type="hidden" name="plan_id" value="<%= activity.plan_id %>" />
+                            <input type="hidden" name="id_activity" value="<%= activity.id %>" />
+                            <div class="form-group">
+                              <label for="hasil_fu">Hasil FU</label>
+                              <textarea name="hasil_fu" class="form-control" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                              <label for="file_upload_fu">Attach File (Optional)</label>
+                              <input type="file" name="file_upload" class="form-control-file" />
+                            </div>
+                            <button type="submit" class="btn btn-secondary">Simpan Hasil FU</button>
+                          </form>
+
+                          <!-- Form untuk Hasil Akhir -->
+                          <form action="/plans/hasil-akhir" method="POST" enctype="multipart/form-data"
+                            id="formHasilAkhir<%= activity.id %>" style="display:none;">
+                            <input type="hidden" name="plan_id" value="<%= activity.plan_id %>" />
+                            <input type="hidden" name="id_activity" value="<%= activity.id %>" />
+                            <div class="form-group">
+                              <label for="hasil_akhir">Hasil Akhir</label>
+                              <textarea name="hasil_akhir" class="form-control" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                              <label for="file_upload_akhir">Attach File (Optional)</label>
+                              <input type="file" name="file_upload" class="form-control-file" />
+                            </div>
+                            <button type="submit" class="btn btn-secondary">Simpan Hasil Akhir</button>
+                          </form>
+
+                          <script>
+                            // Fungsi untuk menampilkan form berdasarkan jenis hasil yang dipilih
+                            function showFormByType(selectElement, activityId) {
+                              var hasilFuForm = document.getElementById("formHasilFu" + activityId);
+                              var hasilAkhirForm = document.getElementById("formHasilAkhir" + activityId);
+
+                              // Menyembunyikan kedua form
+                              hasilFuForm.style.display = 'none';
+                              hasilAkhirForm.style.display = 'none';
+
+                              // Menampilkan form berdasarkan pilihan
+                              if (selectElement.value === 'hasil_fu') {
+                                hasilFuForm.style.display = 'block';
+                              } else if (selectElement.value === 'hasil_akhir') {
+                                hasilAkhirForm.style.display = 'block';
+                              }
+                            }
+
+                            // Menginisialisasi form yang sesuai saat halaman pertama kali dimuat
+                            document.addEventListener("DOMContentLoaded", function () {
+                              var selectElement = document.getElementById("hasil_type<%= activity.id %>");
+                              showFormByType(selectElement, <%= activity.id %>); // Menampilkan form yang sesuai saat halaman dimuat
+                            });
+                          </script>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </td>
+              </tr>
+              <% }); %>
+                <% } else { %>
+                  <tr>
+                    <td class="text-center" colspan="5">Tidak ada data</td>
+                  </tr>
+                  <% } %>
+        </tbody>
+      </table>
+
+      <!-- Pagination (optional, jika ada) -->
+      <% if (typeof pagination !=='undefined' ) { %>
+        <div class="d-flex justify-content-end">
+          <%= pagination %>
+        </div>
+        <% } %>
 </div>
 
 <script>
@@ -150,4 +276,20 @@
     }
   }
 </script>
+<script>
+  // Fungsi untuk memformat tanggal dalam format dd/mm/yyyy
+  function formatTanggal(dateString) {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0'); // Menambah 0 di depan jika tanggal < 10
+    const month = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][date.getMonth()];
+    const year = date.getFullYear();
 
+    return `${day} ${month} ${year}`;
+  }
+
+  // Menggunakan fungsi formatTanggal untuk memformat tanggal yang ada di tabel
+  document.querySelectorAll('.tanggal-fu').forEach((element) => {
+    const originalDate = element.getAttribute('data-date');
+    element.textContent = formatTanggal(originalDate);
+  });
+</script>
