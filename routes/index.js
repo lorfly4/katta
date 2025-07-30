@@ -654,18 +654,231 @@ router.post('/plans/hasil-akhir', upload.single('file_upload'), isAuthenticated,
 });
 
 
-router.get('/po-management', isAuthenticated, (req, res) => {
-  res.render('po-management', { title: 'Pengelolaan PO', user: req.session.user });
+router.get("/po-management", isAuthenticated, async (req, res) => {
+  if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales' && req.session.user.role !== 'admin-sales') {
+    return res.status(403).send('Dilarang');
+  }
+
+  const search = req.query.search || '';
+  const [poList] = await db.execute(
+    "SELECT * FROM po WHERE po_number LIKE ? ORDER BY created_at DESC",
+    [`%${search}%`]
+  );
+
+  res.render("crm/table/po-management", {
+    title: "Pengelolaan PO",
+    user: req.session.user,
+    poList,
+    search
+  });
 });
 
-router.post('/create-po', isAuthenticated, async (req, res) => {
-  const { po_number, po_details, po_status } = req.body;
+router.get("/create-po", isAuthenticated, async (req, res) => {
+  try {
+    // Ambil semua data client
+    const [clients] = await db.execute("SELECT * FROM clients");
 
-  // Simpan PO ke database
-  await db.execute('INSERT INTO po (po_number, po_details, po_status) VALUES (?, ?, ?)', [po_number, po_details, po_status]);
+    // Ambil informasi user dan role dari session
+    const { name: pic_name, role, telephone: pic_phone } = req.session.user;
 
-  res.redirect('/po-management');
+    // Tentukan pic_position berdasarkan role
+    let pic_position = '';
+    if (role === 'admin') {
+      pic_position = 'Administrator';
+    } else if (role === 'sales') {
+      pic_position = 'Sales Representative';
+    } else if (role === 'admin-sales') {
+      pic_position = 'Sales Manager';
+    } else {
+      pic_position = 'Unknown';
+    }
+
+    // Kirim data client dan PIC ke tampilan
+    res.render("crm/backend/create-po", {
+      title: "Buat PO Baru",
+      user: req.session.user,
+      pic_name,
+      pic_position,
+      pic_phone,
+      clients, // Kirim data client ke tampilan
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Terjadi kesalahan saat mengambil data client");
+  }
 });
+
+
+
+router.post("/create-po", isAuthenticated, async (req, res) => {
+  const { po_details, client_id, value } = req.body;
+  const { name: pic_name, role, telephone: pic_phone } = req.session.user;
+
+  // Tentukan pic_position berdasarkan role
+  let pic_position = '';
+  if (role === 'admin') {
+    pic_position = 'Administrator';
+  } else if (role === 'sales') {
+    pic_position = 'Sales Representative';
+    } else if (role === 'admin-sales') {
+      pic_position = 'Sales Manager';
+  } else {
+    pic_position = 'Unknown'; // Atur default jika role tidak ditemukan
+  }
+
+  // Cek jika client_id, po_details, dan value ada dan tidak undefined
+  if (!client_id || !po_details || !value) {
+    return res.status(400).send("Semua field harus diisi.");
+  }
+
+  try {
+    // Ambil data client berdasarkan ID
+    const [client] = await db.execute("SELECT * FROM clients WHERE id = ?", [client_id]);
+
+    if (client.length === 0) {
+      return res.status(404).send("Client tidak ditemukan");
+    }
+
+    const client_name = client[0].name;
+    const client_company = client[0].company;
+    const client_phone = client[0].phone;
+    const client_email = client[0].email;
+
+    // Auto-generate nomor PO
+    const po_number = `PO-${Date.now()}`;
+
+    // Simpan PO ke database
+    await db.execute(
+      "INSERT INTO po (po_number, po_details, created_by, pic_name, pic_position, pic_phone, client_name, client_company, client_phone, client_email, value) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [po_number, po_details, req.session.user.id, pic_name, pic_position, pic_phone, client_name, client_company, client_phone, client_email, value]
+    );
+
+    // Kirim notifikasi email jika diperlukan
+    const [emailConfig] = await db.execute("SELECT * FROM konfig_email LIMIT 1");
+    const { type, host, port, username, password } = emailConfig[0];
+
+    if (type && host && port && username && password) {
+      const transporter = nodemailer.createTransport({
+        service: type === "gmail" ? "gmail" : undefined,
+        host: type === "smtp" ? host : undefined,
+        port: type === "smtp" ? port : undefined,
+        auth: {
+          user: username,
+          pass: password
+        }
+      });
+
+      const mailOptions = {
+        from: "noreply@example.com",
+        to: req.session.user.email,  // Kirim ke email pengguna
+        subject: `Notifikasi Pembuatan PO: ${po_number}`,
+        text: `PO baru telah dibuat dengan nomor PO: ${po_number}, rincian sebagai berikut:\n\n${po_details}\n\nPIC: ${pic_name}\nJabatan: ${pic_position}\nNomor PIC: ${pic_phone}\n\nClient: ${client_name}\nPerusahaan Client: ${client_company}\nNomor Telepon Client: ${client_phone}\nEmail Client: ${client_email}`
+      };
+
+      await transporter.sendMail(mailOptions);
+    }
+
+    res.redirect("/po-management");
+  } catch (err) {
+    console.error("Error saat membuat PO:", err);
+    res.status(500).send("Terjadi kesalahan saat membuat PO");
+  }
+});
+
+
+
+router.get("/po-detail/:id", isAuthenticated, async (req, res) => {
+   if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales' && req.session.user.role !== 'admin-sales') {
+    return res.status(403).send('Dilarang');
+  }
+  const poId = req.params.id;
+
+  // Ambil detail PO
+  const [poDetail] = await db.execute("SELECT * FROM po WHERE id = ?", [poId]);
+
+  if (poDetail.length === 0) {
+    return res.status(404).send("PO tidak ditemukan");
+  }
+
+  res.render("crm/table/po-detail", {
+    title: "Detail PO",
+    po: poDetail[0],
+    user: req.session.user
+  });
+});
+
+router.get("/client-info/:id", async (req, res) => {
+  const clientId = req.params.id;
+
+  try {
+    const [client] = await db.execute("SELECT * FROM clients WHERE id = ?", [clientId]);
+    if (client.length === 0) {
+      return res.status(404).send("Client tidak ditemukan");
+    }
+
+    // Kirimkan data client sebagai JSON
+    res.json({
+      client_name: client[0].name,
+      client_company: client[0].company,
+      client_phone: client[0].phone,
+      client_email: client[0].email,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Terjadi kesalahan saat mengambil data client");
+  }
+});
+
+
+router.post("/approve-po/:id", isAuthenticated, async (req, res) => {
+  const poId = req.params.id;
+  const userId = req.session.user.id;
+  const action = req.body.action; // 'approve' or 'cancel'
+
+  if (action !== "approve" && action !== "cancel") {
+    return res.status(400).send("Aksi tidak valid");
+  }
+
+  try {
+    if (action === "approve") {
+      // Update PO menjadi approved dan set tanggal approve
+      await db.execute(
+        "UPDATE po SET po_status = 'approved', approved_by = ?, approved_at = NOW() WHERE id = ?",
+        [userId, poId]
+      );
+    } else if (action === "cancel") {
+      // Update PO menjadi cancelled
+      await db.execute(
+        "UPDATE po SET po_status = 'cancelled' WHERE id = ?",
+        [poId]
+      );
+    }
+
+    res.redirect("/po-management");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Terjadi kesalahan saat mengubah status PO");
+  }
+});
+
+router.post("/revised-po/:id", isAuthenticated, async (req, res) => {
+  const poId = req.params.id;
+  const { po_details } = req.body;
+
+  try {
+    // Update PO dengan rincian yang baru dan tanggal revisi
+    await db.execute(
+      "UPDATE po SET po_details = ?, revised_at = NOW() WHERE id = ?",
+      [po_details, poId]
+    );
+
+    res.redirect(`/po-detail/${poId}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Terjadi kesalahan saat merevisi PO");
+  }
+});
+
 
 router.get('/interactions', isAuthenticated, async (req, res) => {
   const [rows] = await db.execute('SELECT * FROM interactions');

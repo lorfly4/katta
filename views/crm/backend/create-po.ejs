@@ -1,0 +1,96 @@
+<div class="container mt-4">
+  <!-- Header -->
+  <div class="row mb-2">
+    <div class="col-sm-6">
+      <h1 class="m-0">Buat PO Baru</h1>
+    </div>
+    <div class="col-sm-6">
+      <ol class="breadcrumb float-sm-right" style="background-color: #f4f6f9">
+        <li class="breadcrumb-item"><a href="#">Halaman Utama</a></li>
+        <li class="breadcrumb-item active">Buat PO</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Form untuk Pembuatan PO -->
+  <form action="/create-po" method="POST">
+    <div class="form-group">
+      <label for="po_details">Rincian PO</label>
+      <textarea name="po_details" class="form-control" id="po_details" required></textarea>
+    </div>
+
+    <!-- Nama PIC diambil dari data user -->
+    <div class="form-group">
+      <label for="pic_name">Nama PIC</label>
+      <input type="text" name="pic_name" class="form-control" id="pic_name" value="<%= pic_name %>" required readonly />
+    </div>
+
+    <!-- Jabatan PIC diambil dari data user -->
+    <div class="form-group">
+      <label for="pic_position">Jabatan PIC</label>
+      <input type="text" name="pic_position" class="form-control" id="pic_position" value="<%= pic_position %>" required readonly />
+    </div>
+
+    <!-- Nomor Telepon PIC diambil dari data user -->
+    <div class="form-group">
+      <label for="pic_phone">Nomor PIC</label>
+      <input type="text" name="pic_phone" class="form-control" id="pic_phone" value="<%= pic_phone %>" required readonly />
+    </div>
+
+    <!-- Dropdown untuk memilih Nama Client -->
+ <div class="form-group">
+  <label for="client_id">Nama Client</label>
+  <select name="client_id" class="form-control" id="client_id" required onchange="loadClientData(this)">
+    <option value="">Pilih Client</option>
+    <% clients.forEach(function(client) { %>
+      <option value="<%= client.id %>"><%= client.name %></option>
+    <% }); %>
+  </select>
+</div>
+
+
+    <!-- Menampilkan data alamat dan telepon client yang dipilih -->
+    <div class="form-group">
+      <label for="client_company">Perusahaan Client</label>
+      <input type="text" name="client_company" class="form-control" id="client_company" readonly />
+    </div>
+
+    <div class="form-group">
+      <label for="client_phone">Nomor Telepon Client</label>
+      <input type="text" name="client_phone" class="form-control" id="client_phone" readonly />
+    </div>
+
+    <div class="form-group">
+      <label for="client_email">Email Client</label>
+      <input type="email" name="client_email" class="form-control" id="client_email" readonly />
+    </div>
+
+    <div class="form-group">
+      <label for="value">Nilai PO (Rp)</label>
+      <input type="number" name="value" class="form-control" id="value" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Buat PO</button>
+  </form>
+</div>
+
+<script>
+  // Fungsi untuk mengambil data client berdasarkan id yang dipilih
+  function loadClientData(select) {
+    const clientId = select.value;
+    if (clientId) {
+      fetch(`/client-info/${clientId}`)
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('client_company').value = data.client_company;
+          document.getElementById('client_phone').value = data.client_phone;
+          document.getElementById('client_email').value = data.client_email;
+        })
+        .catch(error => console.error('Error:', error));
+    } else {
+      document.getElementById('client_company').value = '';
+      document.getElementById('client_phone').value = '';
+      document.getElementById('client_email').value = '';
+    }
+  }
+</script>

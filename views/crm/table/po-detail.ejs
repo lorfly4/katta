@@ -1,0 +1,81 @@
+<!-- Main Content -->
+<section class="content">
+  <div class="container-fluid">
+    <!-- Card for PO Details -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Informasi PO</h3>
+      </div>
+      <div class="card-body">
+        <p><strong>Nomor PO:</strong> <%= po.po_number %></p>
+        <p><strong>Rincian PO:</strong> <%= po.po_details %></p>
+        <p><strong>Nama PIC:</strong> <%= po.pic_name %></p>
+        <p><strong>Telepon PIC:</strong> <%= po.pic_phone %></p>
+        <p><strong>Jabatan PIC:</strong> <%= po.pic_position %></p>
+        <p><strong>Nilai PO (Rp):</strong> <%= po.value %></p>
+        <p><strong>Status PO:</strong> <%= po.po_status %></p>
+        <p><strong>Tanggal Dibuat:</strong> <span class="tanggal-create" data-date="<%= po.created_at %>"></span></p>
+        <p><strong>Tanggal Revisi:</strong> <span class="tanggal-revised" data-date="<%= po.revised_at %>"></span></p>
+        <p><strong>Tanggal Approve:</strong> <span class="tanggal-approve" data-date="<%= po.approved_at %>"></span></p>
+      </div>
+    </div>
+
+    <!-- Card for Client Details -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h3 class="card-title">Detail Client</h3>
+      </div>
+      <div class="card-body">
+        <p><strong>Nama Client:</strong> <%= po.client_name %></p>
+        <p><strong>Perusahaan Client:</strong> <%= po.client_company %></p>
+        <p><strong>Telepon Client:</strong> <%= po.client_phone %></p>
+        <p><strong>Email Client:</strong> <%= po.client_email %></p>
+      </div>
+    </div>
+
+    <!-- Card for Approval Details -->
+    <div class="card mt-3">
+      <div class="card-header">
+        <h3 class="card-title">Approval PO</h3>
+      </div>
+      <div class="card-body">
+        <p><strong>Approved By:</strong> <%= po.approved_by %></p>
+        <p><strong>Tanggal Approve:</strong> <span class="tanggal-approve" data-date="<%= po.approved_at %>"></span></p>
+      </div>
+    </div>
+
+    <!-- Buttons for Edit and Back -->
+    <div class="mt-3">
+      <a href="/po-management" class="btn btn-primary">Kembali ke Daftar PO</a>
+      <a href="/po/edit/<%= po.id %>" class="btn btn-warning ml-2">Edit PO</a>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Fungsi untuk memformat tanggal dalam format dd/mm/yyyy
+  function formatTanggal(dateString) {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0'); // Menambah 0 di depan jika tanggal < 10
+    const month = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][date.getMonth()];
+    const year = date.getFullYear();
+
+    return `${day} ${month} ${year}`;
+  }
+
+  // Menggunakan fungsi formatTanggal untuk memformat tanggal yang ada di tabel
+  document.querySelectorAll('.tanggal-create').forEach((element) => {
+    const originalDate = element.getAttribute('data-date');
+    element.textContent = formatTanggal(originalDate);
+  });
+
+  document.querySelectorAll('.tanggal-revised').forEach((element) => {
+    const originalDate = element.getAttribute('data-date');
+    element.textContent = formatTanggal(originalDate);
+  });
+
+  document.querySelectorAll('.tanggal-approve').forEach((element) => {
+    const originalDate = element.getAttribute('data-date');
+    element.textContent = formatTanggal(originalDate);
+  });
+</script>

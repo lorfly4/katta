@@ -1,0 +1,82 @@
+<div class="container mt-4">
+  <!-- Header -->
+  <div class="row mb-2">
+    <div class="col-sm-6">
+      <h1 class="m-0">Tabel PO</h1>
+    </div>
+    <div class="col-sm-6">
+      <ol class="breadcrumb float-sm-right" style="background-color: #f4f6f9">
+        <li class="breadcrumb-item"><a href="#">Halaman Utama</a></li>
+        <li class="breadcrumb-item active">Tabel PO</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Tombol dan Search -->
+  <div class="d-flex justify-content-between mb-2">
+    <a href="/create-po" class="btn btn-sm btn-success">Tambah PO</a>
+    <form action="/po-management" method="GET" class="d-flex justify-content-between mb-2">
+      <input type="text" name="search" class="form-control form-control-sm" placeholder="Cari PO..." value="<%= search || '' %>">
+      <button type="submit" class="btn btn-sm btn-primary ml-2">Cari</button>
+    </form>
+  </div>
+
+  <!-- Flash message -->
+  <% if (typeof success !== 'undefined') { %>
+    <div class="alert alert-success" role="alert">
+      <%= success %>
+    </div>
+    <script>
+      setTimeout(function () {
+        document.querySelector(".alert").remove();
+      }, 3000);
+    </script>
+  <% } %>
+
+  <!-- Tabel -->
+  <table class="table table-striped table-bordered">
+    <thead class="table-dark">
+      <tr class="text-center align-middle">
+        <th style="width: 3em">No</th>
+        <th>Nomor PO</th>
+        <th>Status PO</th>
+        <th>Nama PIC</th>
+        <th>Jabatan PIC</th>
+        <th>Nilai PO</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (poList && poList.length > 0) { %>
+        <% poList.forEach(function(po, idx) { %>
+          <tr>
+            <td class="text-center"><%= idx + 1 %></td>
+            <td><%= po.po_number %></td>
+            <td><%= po.po_status %></td>
+            <td><%= po.pic_name %></td>
+            <td><%= po.pic_position %></td>
+            <td><%= po.value %></td>
+            <td class="text-center">
+              <!-- Tombol Detail -->
+              <a href="/po-detail/<%= po.id %>" class="btn btn-sm btn-info">Detail</a>
+
+              <!-- Tombol Approve atau Cancel PO -->
+              <% if (po.po_status === 'pending') { %>
+                <form action="/approve-po/<%= po.id %>" method="POST" class="d-inline">
+                  <button type="submit" class="btn btn-sm btn-success" name="action" value="approve">Approve</button>
+                </form>
+                <form action="/approve-po/<%= po.id %>" method="POST" class="d-inline">
+                  <button type="submit" class="btn btn-sm btn-danger" name="action" value="cancel">Cancel</button>
+                </form>
+              <% } %>
+            </td>
+          </tr>
+        <% }); %>
+      <% } else { %>
+        <tr>
+          <td class="text-center" colspan="7">Tidak ada data</td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
