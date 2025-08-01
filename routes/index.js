@@ -711,84 +711,42 @@ router.get("/create-po", isAuthenticated, async (req, res) => {
 
 
 router.post("/create-po", isAuthenticated, async (req, res) => {
-  const { po_details, client_id, value } = req.body;
+  const { po_details, client_id, value, product_name, uom_type, uom1, uom2, price } = req.body;
   const { name: pic_name, role, telephone: pic_phone } = req.session.user;
+  const pic_position = role === 'admin' ? 'Administrator' : 'Sales Representative';
 
-  // Tentukan pic_position berdasarkan role
-  let pic_position = '';
-  if (role === 'admin') {
-    pic_position = 'Administrator';
-  } else if (role === 'sales') {
-    pic_position = 'Sales Representative';
-    } else if (role === 'admin-sales') {
-      pic_position = 'Sales Manager';
-  } else {
-    pic_position = 'Unknown'; // Atur default jika role tidak ditemukan
-  }
-
-  // Cek jika client_id, po_details, dan value ada dan tidak undefined
-  if (!client_id || !po_details || !value) {
+  if (!client_id || !po_details || !product_name || !value || !price) {
     return res.status(400).send("Semua field harus diisi.");
   }
 
   try {
-    // Ambil data client berdasarkan ID
     const [client] = await db.execute("SELECT * FROM clients WHERE id = ?", [client_id]);
+    if (client.length === 0) return res.status(404).send("Klien tidak ditemukan.");
 
-    if (client.length === 0) {
-      return res.status(404).send("Client tidak ditemukan");
-    }
-
-    const client_name = client[0].name;
-    const client_company = client[0].company;
-    const client_phone = client[0].phone;
-    const client_email = client[0].email;
-
-    // Auto-generate nomor PO
     const po_number = `PO-${Date.now()}`;
 
-    // Simpan PO ke database
+    // Tentukan harga sesuai dengan UOM yang dipilih
+    let selectedUOM = uom_type === 'uom1' ? uom1 : uom2;
+    let priceMultiplier = (uom_type === 'uom2') ? 1.2 : 1;  // Misalnya, jika UOM 2, harga dikalikan dengan faktor 1.2
+
+    // Kalkulasi harga berdasarkan jenis UOM
+    const total_price = price * priceMultiplier;
+
     await db.execute(
-      "INSERT INTO po (po_number, po_details, created_by, pic_name, pic_position, pic_phone, client_name, client_company, client_phone, client_email, value) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      [po_number, po_details, req.session.user.id, pic_name, pic_position, pic_phone, client_name, client_company, client_phone, client_email, value]
+      "INSERT INTO po (po_number, po_details, created_by, pic_name, pic_position, pic_phone, client_name, client_company, client_phone, client_email, value, product_name, uom_type, uom_selected, price, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [po_number, po_details, req.session.user.id, pic_name, pic_position, pic_phone, client[0].name, client[0].company, client[0].phone, client[0].email, value, product_name, uom_type, selectedUOM, price, total_price]
     );
-
-    // Kirim notifikasi email jika diperlukan
-    const [emailConfig] = await db.execute("SELECT * FROM konfig_email LIMIT 1");
-    const { type, host, port, username, password } = emailConfig[0];
-
-    if (type && host && port && username && password) {
-      const transporter = nodemailer.createTransport({
-        service: type === "gmail" ? "gmail" : undefined,
-        host: type === "smtp" ? host : undefined,
-        port: type === "smtp" ? port : undefined,
-        auth: {
-          user: username,
-          pass: password
-        }
-      });
-
-      const mailOptions = {
-        from: "noreply@example.com",
-        to: req.session.user.email,  // Kirim ke email pengguna
-        subject: `Notifikasi Pembuatan PO: ${po_number}`,
-        text: `PO baru telah dibuat dengan nomor PO: ${po_number}, rincian sebagai berikut:\n\n${po_details}\n\nPIC: ${pic_name}\nJabatan: ${pic_position}\nNomor PIC: ${pic_phone}\n\nClient: ${client_name}\nPerusahaan Client: ${client_company}\nNomor Telepon Client: ${client_phone}\nEmail Client: ${client_email}`
-      };
-
-      await transporter.sendMail(mailOptions);
-    }
 
     res.redirect("/po-management");
   } catch (err) {
     console.error("Error saat membuat PO:", err);
-    res.status(500).send("Terjadi kesalahan saat membuat PO");
+    res.status(500).send("Terjadi kesalahan server saat membuat PO.");
   }
 });
 
 
-
 router.get("/po-detail/:id", isAuthenticated, async (req, res) => {
-   if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales' && req.session.user.role !== 'admin-sales') {
+  if (req.session.user.role !== 'admin' && req.session.user.role !== 'sales' && req.session.user.role !== 'admin-sales') {
     return res.status(403).send('Dilarang');
   }
   const poId = req.params.id;
@@ -832,19 +790,20 @@ router.get("/client-info/:id", async (req, res) => {
 
 router.post("/approve-po/:id", isAuthenticated, async (req, res) => {
   const poId = req.params.id;
-  const userId = req.session.user.id;
-  const action = req.body.action; // 'approve' or 'cancel'
+  const action = req.body.action; // 'approve' atau 'cancel'
 
   if (action !== "approve" && action !== "cancel") {
-    return res.status(400).send("Aksi tidak valid");
+    return res.status(400).send("Aksi tidak valid.");
   }
 
   try {
+    const approvedBy = req.session.user.name;  // Ambil nama pengguna dari session
+
     if (action === "approve") {
-      // Update PO menjadi approved dan set tanggal approve
+      // Update PO menjadi approved dan simpan nama yang melakukan approval
       await db.execute(
         "UPDATE po SET po_status = 'approved', approved_by = ?, approved_at = NOW() WHERE id = ?",
-        [userId, poId]
+        [approvedBy, poId]
       );
     } else if (action === "cancel") {
       // Update PO menjadi cancelled
@@ -856,10 +815,11 @@ router.post("/approve-po/:id", isAuthenticated, async (req, res) => {
 
     res.redirect("/po-management");
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Terjadi kesalahan saat mengubah status PO");
+    console.error("Error saat approve/cancel PO:", err);
+    res.status(500).send("Terjadi kesalahan saat mengubah status PO.");
   }
 });
+
 
 router.post("/revised-po/:id", isAuthenticated, async (req, res) => {
   const poId = req.params.id;

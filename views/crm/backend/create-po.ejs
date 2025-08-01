@@ -19,58 +19,153 @@
       <textarea name="po_details" class="form-control" id="po_details" required></textarea>
     </div>
 
-    <!-- Nama PIC diambil dari data user -->
     <div class="form-group">
-      <label for="pic_name">Nama PIC</label>
-      <input type="text" name="pic_name" class="form-control" id="pic_name" value="<%= pic_name %>" required readonly />
+      <label for="product_name">Nama Produk</label>
+      <input type="text" name="product_name" class="form-control" id="product_name" required />
     </div>
 
-    <!-- Jabatan PIC diambil dari data user -->
+    <!-- Pilih Jumlah UOM -->
     <div class="form-group">
-      <label for="pic_position">Jabatan PIC</label>
-      <input type="text" name="pic_position" class="form-control" id="pic_position" value="<%= pic_position %>" required readonly />
+      <label for="uom_count">Jumlah UOM</label>
+      <select name="uom_count" id="uom_count" class="form-control" onchange="toggleUOM(this)">
+        <option value="1">1 UOM</option>
+        <option value="2">2 UOM</option>
+      </select>
     </div>
 
-    <!-- Nomor Telepon PIC diambil dari data user -->
-    <div class="form-group">
-      <label for="pic_phone">Nomor PIC</label>
-      <input type="text" name="pic_phone" class="form-control" id="pic_phone" value="<%= pic_phone %>" required readonly />
+    <!-- UOM 1 (log, box, carton) -->
+    <div class="form-group" id="uom1_group">
+      <label for="uom1">Pilih UOM 1</label>
+      <select name="uom1" id="uom1" class="form-control" onchange="updateUOMValue()">
+        <option value="log">Log</option>
+        <option value="box">Box</option>
+        <option value="carton">Carton</option>
+      </select>
+      <label for="uom1_value">Value UOM 1</label>
+      <input type="text" name="uom1_value" id="uom1_value" class="form-control" placeholder="Masukkan nilai UOM 1" />
     </div>
 
-    <!-- Dropdown untuk memilih Nama Client -->
- <div class="form-group">
-  <label for="client_id">Nama Client</label>
-  <select name="client_id" class="form-control" id="client_id" required onchange="loadClientData(this)">
-    <option value="">Pilih Client</option>
-    <% clients.forEach(function(client) { %>
-      <option value="<%= client.id %>"><%= client.name %></option>
-    <% }); %>
-  </select>
-</div>
-
-
-    <!-- Menampilkan data alamat dan telepon client yang dipilih -->
-    <div class="form-group">
-      <label for="client_company">Perusahaan Client</label>
-      <input type="text" name="client_company" class="form-control" id="client_company" readonly />
+    <!-- UOM 2 (pax, pcs, dll) -->
+    <div class="form-group" id="uom2_group" style="display: none;">
+      <label for="uom2">Pilih UOM 2</label>
+      <select name="uom2" id="uom2" class="form-control" onchange="updateUOMValue()">
+        <option value="pax">Pax</option>
+        <option value="pcs">Pcs</option>
+        <option value="other">Other</option>
+      </select>
+      <label for="uom2_value">Value UOM 2</label>
+      <input type="text" name="uom2_value" id="uom2_value" class="form-control" placeholder="Masukkan nilai UOM 2" />
     </div>
 
+    <!-- Harga -->
     <div class="form-group">
-      <label for="client_phone">Nomor Telepon Client</label>
-      <input type="text" name="client_phone" class="form-control" id="client_phone" readonly />
+      <label for="price">Harga</label>
+      <input type="number" name="price" class="form-control" id="price" required />
     </div>
 
-    <div class="form-group">
-      <label for="client_email">Email Client</label>
-      <input type="email" name="client_email" class="form-control" id="client_email" readonly />
-    </div>
+  <script>
+    // Fungsi untuk menampilkan atau menyembunyikan UOM berdasarkan jumlah UOM yang dipilih
+    function toggleUOM(select) {
+      const uom1Group = document.getElementById('uom1_group');
+      const uom2Group = document.getElementById('uom2_group');
 
-    <div class="form-group">
-      <label for="value">Nilai PO (Rp)</label>
-      <input type="number" name="value" class="form-control" id="value" required />
-    </div>
+      if (select.value === '1') {
+        // Menampilkan hanya UOM 1
+        uom1Group.style.display = 'block';
+        uom2Group.style.display = 'none';
+      } else {
+        // Menampilkan kedua UOM
+        uom1Group.style.display = 'block';
+        uom2Group.style.display = 'block';
+      }
+    }
 
-    <button type="submit" class="btn btn-primary">Buat PO</button>
+    // Fungsi untuk memperbarui value setiap kali UOM berubah
+    function updateUOMValue() {
+      const uom1 = document.getElementById('uom1').value;
+      const uom2 = document.getElementById('uom2').value;
+
+      // Update placeholder untuk value UOM 1
+      const uom1ValueInput = document.getElementById('uom1_value');
+      if (uom1 === 'log') {
+        uom1ValueInput.placeholder = 'Masukkan nilai untuk 1 log (misalnya)';
+      } else if (uom1 === 'box') {
+        uom1ValueInput.placeholder = 'Masukkan nilai untuk 1 box (misalnya)';
+      } else if (uom1 === 'carton') {
+        uom1ValueInput.placeholder = 'Masukkan nilai untuk 1 carton (misalnya)';
+      }
+
+      // Update placeholder untuk value UOM 2
+      const uom2ValueInput = document.getElementById('uom2_value');
+      if (uom2 === 'pax') {
+        uom2ValueInput.placeholder = 'Masukkan nilai untuk 50 pax (misalnya)';
+      } else if (uom2 === 'pcs') {
+        uom2ValueInput.placeholder = 'Masukkan nilai untuk 50 pcs (misalnya)';
+      } else {
+        uom2ValueInput.placeholder = 'Masukkan nilai untuk pilihan Anda';
+      }
+    }
+
+    // Panggil fungsi untuk memperbarui value awal ketika halaman pertama kali dimuat
+    window.onload = updateUOMValue;
+  </script>
+
+
+  <!-- Nama PIC diambil dari data user -->
+  <div class="form-group">
+    <label for="pic_name">Nama PIC</label>
+    <input type="text" name="pic_name" class="form-control" id="pic_name" value="<%= pic_name %>" required readonly />
+  </div>
+
+  <!-- Jabatan PIC diambil dari data user -->
+  <div class="form-group">
+    <label for="pic_position">Jabatan PIC</label>
+    <input type="text" name="pic_position" class="form-control" id="pic_position" value="<%= pic_position %>" required
+      readonly />
+  </div>
+
+  <!-- Nomor Telepon PIC diambil dari data user -->
+  <div class="form-group">
+    <label for="pic_phone">Nomor PIC</label>
+    <input type="text" name="pic_phone" class="form-control" id="pic_phone" value="<%= pic_phone %>" required
+      readonly />
+  </div>
+
+  <!-- Dropdown untuk memilih Nama Client -->
+  <div class="form-group">
+    <label for="client_id">Nama Client</label>
+    <select name="client_id" class="form-control" id="client_id" required onchange="loadClientData(this)">
+      <option value="">Pilih Client</option>
+      <% clients.forEach(function(client) { %>
+        <option value="<%= client.id %>">
+          <%= client.name %>
+        </option>
+        <% }); %>
+    </select>
+  </div>
+
+  <!-- Menampilkan data alamat dan telepon client yang dipilih -->
+  <div class="form-group">
+    <label for="client_company">Perusahaan Client</label>
+    <input type="text" name="client_company" class="form-control" id="client_company" readonly />
+  </div>
+
+  <div class="form-group">
+    <label for="client_phone">Nomor Telepon Client</label>
+    <input type="text" name="client_phone" class="form-control" id="client_phone" readonly />
+  </div>
+
+  <div class="form-group">
+    <label for="client_email">Email Client</label>
+    <input type="email" name="client_email" class="form-control" id="client_email" readonly />
+  </div>
+
+  <div class="form-group">
+    <label for="value">Nilai PO (Rp)</label>
+    <input type="number" name="value" class="form-control" id="value" required />
+  </div>
+
+  <button type="submit" class="btn btn-primary">Buat PO</button>
   </form>
 </div>
 
@@ -80,17 +175,17 @@
     const clientId = select.value;
     if (clientId) {
       fetch(`/client-info/${clientId}`)
-        .then(response => response.json())
-        .then(data => {
-          document.getElementById('client_company').value = data.client_company;
-          document.getElementById('client_phone').value = data.client_phone;
-          document.getElementById('client_email').value = data.client_email;
+        .then((response) => response.json())
+        .then((data) => {
+          document.getElementById("client_company").value = data.client_company;
+          document.getElementById("client_phone").value = data.client_phone;
+          document.getElementById("client_email").value = data.client_email;
         })
-        .catch(error => console.error('Error:', error));
+        .catch((error) => console.error("Error:", error));
     } else {
-      document.getElementById('client_company').value = '';
-      document.getElementById('client_phone').value = '';
-      document.getElementById('client_email').value = '';
+      document.getElementById("client_company").value = "";
+      document.getElementById("client_phone").value = "";
+      document.getElementById("client_email").value = "";
     }
   }
 </script>
